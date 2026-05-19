@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>AI CFO Dashboard — Horizon Community Foundation FY 2025</title>
+<style>
+.agent-section{background:#0B1627;border:1px solid rgba(59,130,246,.15);border-left:3px solid #3B82F6;border-radius:10px;padding:24px;margin-bottom:20px}
+.agent-header{display:flex;align-items:center;gap:10px;margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid rgba(255,255,255,.06)}
+.agent-title{font-size:13px;font-weight:700;color:#93C5FD;letter-spacing:.01em}
+.agent-badge{padding:2px 9px;border-radius:4px;font-size:10px;font-weight:700;background:rgba(71,85,105,.2);border:1px solid rgba(71,85,105,.3);color:#64748B;letter-spacing:.03em}
+.agent-badge.zero-llm{background:rgba(16,185,129,.08);border-color:rgba(16,185,129,.2);color:#10B981}
+.agent-badge.deterministic{background:rgba(59,130,246,.08);border-color:rgba(59,130,246,.2);color:#60A5FA}
+.findings-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+.finding{border-radius:8px;padding:14px 16px;border:1px solid transparent}
+.finding.ok{background:rgba(16,185,129,.04);border-color:rgba(16,185,129,.12);border-left:3px solid #10B981}
+.finding.warn{background:rgba(245,158,11,.04);border-color:rgba(245,158,11,.12);border-left:3px solid #F59E0B}
+.finding.critical{background:rgba(239,68,68,.04);border-color:rgba(239,68,68,.12);border-left:3px solid #EF4444}
+.finding.info{background:rgba(59,130,246,.04);border-color:rgba(59,130,246,.12);border-left:3px solid #3B82F6}
+.finding-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px}
+.finding-title{font-size:11px;font-weight:700;color:#E2E8F0;line-height:1.4}
+.finding-source{font-size:9px;font-weight:600;padding:1px 6px;border-radius:3px;background:rgba(255,255,255,.05);color:#475569;white-space:nowrap;margin-left:8px;flex-shrink:0;letter-spacing:.02em}
+.finding-body{font-size:11px;color:#94A3B8;line-height:1.65;margin-bottom:5px}
+.finding-citation{font-size:10px;color:#334155;font-style:italic;letter-spacing:.01em}
+.agent-summary{background:rgba(6,13,31,.5);border-radius:8px;padding:14px 16px;margin-bottom:16px;border:1px solid rgba(255,255,255,.05)}
+.agent-summary p{font-size:12px;color:#CBD5E1;line-height:1.75}
+.action-list{list-style:none;padding:0;margin:0}
+.action-list li{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:11px;color:#94A3B8;line-height:1.5}
+.action-list li:last-child{border:none}
+.action-num{width:18px;height:18px;border-radius:50%;background:rgba(59,130,246,.15);color:#60A5FA;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#060D1F;color:#F1F5F9;font-family:'Segoe UI','Helvetica Neue',system-ui,sans-serif;min-width:960px;-webkit-font-smoothing:antialiased}
+.container{max-width:1440px;margin:0 auto;padding:32px 28px}
+
+/* ── Header ── */
+.header{background:linear-gradient(135deg,#0B1627 0%,#09142A 100%);border:1px solid rgba(59,130,246,.18);border-top:3px solid #2563EB;border-radius:12px;padding:26px 32px;margin-bottom:28px;display:flex;justify-content:space-between;align-items:flex-start;gap:24px}
+.header-left{display:flex;align-items:flex-start;gap:18px}
+.header-logo{width:48px;height:48px;border-radius:10px;background:linear-gradient(135deg,#1D4ED8,#0EA5E9);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;color:#fff;flex-shrink:0;letter-spacing:-1px}
+.company-name{font-size:20px;font-weight:700;color:#F1F5F9;letter-spacing:-.3px;line-height:1.2}
+.header-sub{font-size:11px;color:#475569;margin-top:5px;letter-spacing:.03em}
+.header-right{text-align:right;flex-shrink:0}
+.header-stamp{display:inline-block;padding:3px 10px;border:1px solid rgba(239,68,68,.3);border-radius:4px;font-size:9px;font-weight:700;color:#F87171;letter-spacing:.12em;text-transform:uppercase;margin-bottom:8px}
+.header-meta{font-size:10px;color:#334155;line-height:1.6}
+.badges{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.badge{padding:4px 11px;border-radius:5px;font-size:10px;font-weight:600;border:1px solid transparent;letter-spacing:.02em}
+
+/* ── Layout ── */
+.section-title{font-size:10px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.1em;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid rgba(255,255,255,.06)}
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:20px}
+.kpi-card{background:#0B1627;border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:20px 22px;position:relative;overflow:hidden;transition:border-color .2s}
+.kpi-card::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,rgba(59,130,246,.35),transparent)}
+.kpi-card:hover{border-color:rgba(59,130,246,.28)}
+.kpi-label{font-size:10px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px}
+.kpi-value{font-size:28px;font-weight:700;letter-spacing:-1px;font-variant-numeric:tabular-nums;line-height:1.1}
+.kpi-value.cyan{color:#22D3EE}
+.kpi-value.blue{color:#60A5FA}
+.kpi-value.green{color:#34D399}
+.kpi-value.amber{color:#FBBF24}
+.kpi-value.red{color:#F87171}
+.kpi-value.purple{color:#A78BFA}
+.kpi-delta{font-size:11px;margin-top:7px;font-weight:500}
+.delta-pos{color:#34D399}.delta-neg{color:#F87171}
+.kpi-sub{font-size:10px;color:#475569;margin-top:4px}
+.kpi-bar{height:3px;border-radius:2px;background:rgba(255,255,255,.06);margin-top:10px;overflow:hidden}
+.kpi-bar-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,#1D4ED8,#0EA5E9)}
+
+/* ── Cards ── */
+.card{background:#0B1627;border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:24px;margin-bottom:20px}
+.card-accent{border-left:3px solid #2563EB}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:20px}
+
+/* ── Tables ── */
+table{width:100%;border-collapse:collapse}
+thead tr{background:rgba(6,13,31,.7)}
+th{color:#475569;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;padding:10px 14px;text-align:right;border-bottom:1px solid rgba(255,255,255,.08)}
+th:first-child{text-align:left}
+td{padding:11px 14px;font-size:12px;text-align:right;color:#CBD5E1;border-bottom:1px solid rgba(255,255,255,.04)}
+td:first-child{text-align:left;color:#94A3B8}
+tbody tr:nth-child(even){background:rgba(255,255,255,.015)}
+tbody tr:hover{background:rgba(59,130,246,.04)}
+tbody tr:last-child td{border-bottom:none}
+
+/* ── Badges / Status ── */
+.status{display:inline-flex;align-items:center;font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;letter-spacing:.04em;border:1px solid transparent}
+.status.ok{background:rgba(52,211,153,.08);color:#34D399;border-color:rgba(52,211,153,.2)}
+.status.warn{background:rgba(245,158,11,.08);color:#F59E0B;border-color:rgba(245,158,11,.2)}
+.status.bad{background:rgba(239,68,68,.08);color:#F87171;border-color:rgba(239,68,68,.2)}
+
+/* ── Dividers & misc ── */
+.chart-legend{display:flex;gap:16px;font-size:11px;color:#64748B;flex-wrap:wrap}
+.chart-legend span{display:flex;align-items:center;gap:5px}
+.chart-legend span::before{content:'';display:inline-block;width:8px;height:8px;border-radius:2px}
+
+/* ── Footer ── */
+.dash-footer{margin-top:40px;padding:18px 0 8px;border-top:1px solid rgba(255,255,255,.06);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;font-size:10px;color:#1E293B}
+.dash-footer-brand{font-weight:700;color:#334155;font-size:11px}
+
+svg text{font-family:'Segoe UI','Helvetica Neue',system-ui,sans-serif}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:#060D1F}
+::-webkit-scrollbar-thumb{background:#1E293B;border-radius:3px}
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="header">
+  <div class="header-left">
+    <div class="header-logo">HC</div>
+    <div>
+      <div class="company-name">Horizon Community Foundation</div>
+      <div class="header-sub">AI CFO Dashboard &nbsp;·&nbsp; FY 2025 &nbsp;·&nbsp; Multi-Agent Financial Intelligence</div>
+      <div class="badges">
+        <span class="badge" style="background:rgba(59,130,246,.1);border-color:rgba(59,130,246,.25);color:#60A5FA">FY 2025</span>
+        <span class="badge" style="background:rgba(52,211,153,.08);border-color:rgba(52,211,153,.2);color:#34D399">GAAP 10/12</span>
+        <span class="badge" style="background:rgba(167,139,250,.08);border-color:rgba(167,139,250,.2);color:#A78BFA">IFRS 10/12</span>
+        <span class="badge" style="background:rgba(34,211,238,.08);border-color:rgba(34,211,238,.2);color:#22D3EE">Revenue $6.2M</span>
+        <span class="badge" style="background:rgba(52,211,153,.08);border-color:rgba(52,211,153,.2);color:#34D399">Auto-Approved</span>
+        
+      </div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="header-stamp">Confidential</div>
+    <div class="header-meta">Zero-LLM Math &middot; Pydantic Enforced &middot; RAG Retrieved<br>GAAP ASC 2026 &middot; IFRS IASB 2026</div>
+  </div>
+</div>
+
+<!-- KPIs -->
+<div class="kpi-row">
+  <div class="kpi-card">
+    <div class="kpi-label">Revenue</div>
+    <div class="kpi-value cyan">$6.2M</div>
+    <div class="kpi-delta delta-pos">+54.9% vs budget</div>
+    <div class="kpi-sub">Budget: $14.5M</div>
+    <div class="kpi-bar"><div class="kpi-bar-fill" style="width:43%"></div></div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-label">Gross Margin</div>
+    <div class="kpi-value green">80.0%</div>
+    <div class="kpi-delta delta-pos">GP: $5.0M</div>
+    <div class="kpi-sub">Above 70% benchmark</div>
+    <div class="kpi-bar"><div class="kpi-bar-fill" style="width:80%"></div></div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-label">EBITDA</div>
+    <div class="kpi-value blue">$1.2M</div>
+    <div class="kpi-delta delta-pos">Margin: 20.0%</div>
+    <div class="kpi-sub">Net Income: $1.0M</div>
+    <div class="kpi-bar"><div class="kpi-bar-fill" style="width:20%"></div></div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-label">Net Income</div>
+    <div class="kpi-value green">$1.0M</div>
+    <div class="kpi-delta delta-pos">Margin: 16.3%</div>
+    <div class="kpi-sub">Diluted EPS: $0.00</div>
+  </div>
+</div>
+<div class="kpi-row">
+  <div class="kpi-card">
+    <div class="kpi-label">Cash &amp; Liquidity</div>
+    <div class="kpi-value cyan">$2.9M</div>
+    <div class="kpi-delta delta-pos">Runway: Profitable</div>
+    <div class="kpi-sub">Working Capital: $2.2M</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-label">Current Ratio</div>
+    <div class="kpi-value green">2.14x</div>
+    <div class="kpi-delta delta-pos">Healthy liquidity</div>
+    <div class="kpi-sub">Target: &gt; 2.0x</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-label">Net Debt / D:E</div>
+    <div class="kpi-value green">$-520K</div>
+    <div class="kpi-delta delta-pos">D/E: 0.17x &nbsp;·&nbsp; ICR: 25.3x</div>
+    <div class="kpi-sub">ASC 740 · Interest coverage</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-label">Return on Equity</div>
+    <div class="kpi-value blue">7.2%</div>
+    <div class="kpi-delta delta-pos">ROA: 5.5%</div>
+    <div class="kpi-sub">DSO: 49 days</div>
+  </div>
+</div>
+
+<!-- Revenue chart -->
+<div class="card">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+    <div>
+      <div class="section-title" style="margin:0;border:none;padding:0">Revenue Trend — Historical + 8Q Forecast</div>
+      <div style="font-size:10px;color:#334155;margin-top:4px">LR 40% + Holt-Winters 60% ensemble &nbsp;·&nbsp; R²=0.8243 &nbsp;·&nbsp; Next Q: $6.4M</div>
+    </div>
+    <div class="chart-legend">
+      <span style="color:#60A5FA">Historical</span>
+      <span style="color:#22D3EE">Current Quarter</span>
+      <span style="color:#A78BFA">Forecast</span>
+    </div>
+  </div>
+  <svg width="100%" viewBox="0 0 760 195" preserveAspectRatio="xMidYMid meet">
+    <line x1="20" y1="40"  x2="750" y2="40"  stroke="rgba(255,255,255,.04)" stroke-width="1"/>
+    <line x1="20" y1="85"  x2="750" y2="85"  stroke="rgba(255,255,255,.04)" stroke-width="1"/>
+    <line x1="20" y1="130" x2="750" y2="130" stroke="rgba(255,255,255,.04)" stroke-width="1"/>
+    <line x1="20" y1="165" x2="750" y2="165" stroke="rgba(255,255,255,.07)" stroke-width="1"/>
+    <rect x="30.0" y="101.3" width="43.7" height="63.7" fill="#60A5FA" rx="3" opacity="0.85"/><text x="52.4" y="185" fill="#4E6880" font-size="8" text-anchor="middle">Q1'20</text><rect x="76.7" y="95.3" width="43.7" height="69.7" fill="#60A5FA" rx="3" opacity="0.85"/><text x="99.1" y="185" fill="#4E6880" font-size="8" text-anchor="middle">Q2'20</text><rect x="123.4" y="104.0" width="43.7" height="61.0" fill="#60A5FA" rx="3" opacity="0.85"/><text x="145.8" y="185" fill="#4E6880" font-size="8" text-anchor="middle">Q3'20</text><rect x="170.1" y="99.7" width="43.7" height="65.3" fill="#60A5FA" rx="3" opacity="0.85"/><text x="192.5" y="185" fill="#4E6880" font-size="8" text-anchor="middle">Q4'20</text><rect x="216.8" y="89.6" width="43.7" height="75.4" fill="#60A5FA" rx="3" opacity="0.85"/><text x="239.2" y="185" fill="#4E6880" font-size="8" text-anchor="middle">Q1'21</text><rect x="263.5" y="82.4" width="43.7" height="82.6" fill="#60A5FA" rx="3" opacity="0.85"/><text x="285.9" y="185" fill="#4E6880" font-size="8" text-anchor="middle">Q2'21</text><rect x="310.2" y="75.1" width="43.7" height="89.9" fill="#60A5FA" rx="3" opacity="0.85"/><text x="332.6" y="185" fill="#4E6880" font-size="8" text-anchor="middle">Q3'21</text><rect x="356.9" y="68.0" width="43.7" height="97.0" fill="#00FFC8" rx="3" opacity="0.85"/><text x="379.3" y="185" fill="#4E6880" font-size="8" text-anchor="middle">Q4'21</text><rect x="403.6" y="65.3" width="43.7" height="99.7" fill="#A78BFA" rx="3" opacity="0.55"/><text x="426.0" y="185" fill="#4E6880" font-size="8" text-anchor="middle">Q1'22</text><rect x="450.4" y="60.9" width="43.7" height="104.1" fill="#A78BFA" rx="3" opacity="0.55"/><text x="472.7" y="185" fill="#4E6880" font-size="8" text-anchor="middle">Q2'22</text><rect x="497.1" y="56.6" width="43.7" height="108.4" fill="#A78BFA" rx="3" opacity="0.55"/><text x="519.4" y="185" fill="#4E6880" font-size="8" text-anchor="middle">Q3'22</text><rect x="543.8" y="52.2" width="43.7" height="112.8" fill="#A78BFA" rx="3" opacity="0.55"/><text x="566.1" y="185" fill="#4E6880" font-size="8" text-anchor="middle">Q4'22</text><rect x="590.5" y="47.8" width="43.7" height="117.2" fill="#A78BFA" rx="3" opacity="0.55"/><text x="612.8" y="185" fill="#4E6880" font-size="8" text-anchor="middle">Q1'23</text><rect x="637.2" y="43.4" width="43.7" height="121.6" fill="#A78BFA" rx="3" opacity="0.55"/><text x="659.5" y="185" fill="#4E6880" font-size="8" text-anchor="middle">Q2'23</text><rect x="683.9" y="39.0" width="43.7" height="126.0" fill="#A78BFA" rx="3" opacity="0.55"/><text x="706.2" y="185" fill="#4E6880" font-size="8" text-anchor="middle">Q3'23</text><rect x="730.6" y="34.6" width="43.7" height="130.4" fill="#A78BFA" rx="3" opacity="0.55"/><text x="752.9" y="185" fill="#4E6880" font-size="8" text-anchor="middle">Q4'23</text>
+  </svg>
+</div>
+
+<!-- Segments -->
+<div class="grid-2">
+  <div class="card" style="margin-bottom:0">
+    <div class="section-title">Revenue by Segment (ASC 280)</div>
+    <div style="display:flex;gap:20px;align-items:center">
+      <svg width="240" height="220" viewBox="0 0 240 220"><path d="M120.0,58.0 L120.0,20.0 A90,90 0 0,1 147.8,195.6 L136.1,159.5 A52,52 0 0,0 120.0,58.0 Z" fill="#00FFC8" opacity="0.85" stroke="#04060F" stroke-width="2"/><path d="M136.1,159.5 L147.8,195.6 A90,90 0 0,1 34.4,82.2 L70.5,93.9 A52,52 0 0,0 136.1,159.5 Z" fill="#60A5FA" opacity="0.85" stroke="#04060F" stroke-width="2"/><path d="M70.5,93.9 L34.4,82.2 A90,90 0 0,1 120.0,20.0 L120.0,58.0 A52,52 0 0,0 70.5,93.9 Z" fill="#A78BFA" opacity="0.85" stroke="#04060F" stroke-width="2"/>
+        <text x="120" y="104" fill="#E2E8F0" font-size="13" font-weight="700" text-anchor="middle">$6.2M</text>
+        <text x="120" y="120" fill="#4E6880" font-size="10" text-anchor="middle">Total Revenue</text>
+      </svg>
+      <div style="flex:1"><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span style="width:10px;height:10px;border-radius:2px;background:#00FFC8;display:inline-block"></span><span style="font-size:12px;color:#94A3B8">Education Grants</span><span style="font-size:12px;font-weight:700;margin-left:auto">$2.8M</span></div><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span style="width:10px;height:10px;border-radius:2px;background:#60A5FA;display:inline-block"></span><span style="font-size:12px;color:#94A3B8">Community Health</span><span style="font-size:12px;font-weight:700;margin-left:auto">$2.2M</span></div><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span style="width:10px;height:10px;border-radius:2px;background:#A78BFA;display:inline-block"></span><span style="font-size:12px;color:#94A3B8">Workforce Development</span><span style="font-size:12px;font-weight:700;margin-left:auto">$1.2M</span></div></div>
+    </div>
+  </div>
+  <div class="card" style="margin-bottom:0">
+    <div class="section-title">Anomaly Detection (IQR Statistical)</div>
+    <div class="insight-card positive"><div class="insight-title">No Anomalies</div><p style="font-size:12px;color:#94A3B8;margin:0">All statistical indicators within normal bounds.</p></div>
+  </div>
+</div>
+
+<!-- Variance -->
+<div class="card">
+  <div class="section-title">Budget vs Actuals — SAB 99 Materiality (>=5%)</div>
+  <table><thead><tr><th>Line Item</th><th>Actual</th><th>Budget</th><th>Variance $</th><th>Variance %</th><th>SAB 99</th></tr></thead>
+  <tbody><tr><td>Revenue</td><td>$6.2M</td><td>$5.8M</td><td class="delta-pos">$440K</td><td class="delta-pos">+7.6%</td><td><span class="status warn">Material</span></td></tr><tr><td>Cost of Revenue</td><td>$1.2M</td><td>$1.2M</td><td class="delta-pos">$88K</td><td class="delta-pos">+7.6%</td><td><span class="status warn">Material</span></td></tr><tr><td>Gross Profit</td><td>$5.0M</td><td>$4.6M</td><td class="delta-pos">$352K</td><td class="delta-pos">+7.6%</td><td><span class="status warn">Material</span></td></tr><tr><td>EBITDA</td><td>$1.2M</td><td>$1.1M</td><td class="delta-pos">$148K</td><td class="delta-pos">+13.4%</td><td><span class="status warn">Material</span></td></tr><tr><td>R&D</td><td>$312K</td><td>$290K</td><td class="delta-pos">$22K</td><td class="delta-pos">+7.6%</td><td><span class="status warn">Material</span></td></tr><tr><td>SG&A</td><td>$0</td><td>$1.5M</td><td class="delta-neg">$-1.5M</td><td class="delta-neg">-100.0%</td><td><span class="status warn">Material</span></td></tr><tr style="font-weight:700"><td>TOTAL</td><td>$22.4M</td><td>$14.5M</td><td class="delta-pos">$8.0M</td><td class="delta-pos">+54.9%</td><td><span class="status ok">—</span></td></tr></tbody></table>
+</div>
+
+<!-- Compliance -->
+<div class="grid-2">
+  <div class="card" style="margin-bottom:0">
+    <div style="text-align:center;padding:8px 0 16px"><div style="font-size:36px;font-weight:700;color:#10B981">10/12</div><div style="font-size:12px;color:#4E6880">GAAP Compliant</div></div>
+    <table><thead><tr><th>Standard</th><th>Status</th><th>Finding</th></tr></thead>
+    <tbody><tr><td>ASC 205-40 Going Concern</td><td><span class="status ok">COMPLIANT</span></td><td style="font-size:11px;color:#64748B">No going concern indicators identified</td></tr><tr><td>ASC 230 Cash Flows</td><td><span class="status ok">COMPLIANT</span></td><td style="font-size:11px;color:#64748B">Cash flow classifications comply with ASC 230</td></tr><tr><td>ASC 260 EPS</td><td><span class="status ok">COMPLIANT</span></td><td style="font-size:11px;color:#64748B">EPS compliant: Basic $0.0, Diluted $0.0</td></tr><tr><td>ASC 280 Segments</td><td><span class="status warn">DISCLOSURE_REQUIRED</span></td><td style="font-size:11px;color:#64748B">Multiple operating segments identified — segment disclosures required (ASC 280-10-50)</td></tr><tr><td>ASC 310/326 CECL</td><td><span class="status ok">COMPLIANT</span></td><td style="font-size:11px;color:#64748B">CECL allowance of $42,000 assessed (5.0% of AR)</td></tr><tr><td>ASC 350 Goodwill</td><td><span class="status ok">COMPLIANT</span></td><td style="font-size:11px;color:#64748B">No goodwill</td></tr><tr><td>ASC 450 Contingencies</td><td><span class="status ok">COMPLIANT</span></td><td style="font-size:11px;color:#64748B">Contingency assessment complete</td></tr><tr><td>ASC 606 Revenue</td><td><span class="status ok">COMPLIANT</span></td><td style="font-size:11px;color:#64748B">Revenue $6,240,000 recognized per ASC 606 5-step model</td></tr><tr><td>ASC 740 Income Taxes</td><td><span class="status ok">COMPLIANT</span></td><td style="font-size:11px;color:#64748B">DTA $0 assessed for 'more likely than not' realizability</td></tr><tr><td>ASC 820 Fair Value</td><td><span class="status ok">COMPLIANT</span></td><td style="font-size:11px;color:#64748B">Fair value hierarchy disclosures assessed</td></tr><tr><td>ASC 842 Leases</td><td><span class="status ok">COMPLIANT</span></td><td style="font-size:11px;color:#64748B">ROU assets $840,000 and lease liabilities $820,000 properly recognized</td></tr><tr><td>SAB 99 Materiality</td><td><span class="status warn">DISCLOSURE_REQUIRED</span></td><td style="font-size:11px;color:#64748B">6 material variance items identified (≥5% threshold)</td></tr></tbody></table>
+  </div>
+  <div class="card" style="margin-bottom:0">
+    <div style="text-align:center;padding:8px 0 16px"><div style="font-size:36px;font-weight:700;color:#A78BFA">10/12</div><div style="font-size:12px;color:#4E6880">IFRS Compliant</div></div>
+    <table><thead><tr><th>Standard</th><th>Status</th><th>Finding</th></tr></thead>
+    <tbody><tr><td>IAS 1 Presentation</td><td><span class="status ok">COMPLIANT</span></td><td style="font-size:11px;color:#64748B">Financial statement presentation complies with IAS 1</td></tr><tr><td>IAS 2 Inventories</td><td><span class="status ok">COMPLIANT</span></td><td style="font-size:11px;color:#64748B">Inventory $45,000 valued at lower of cost and NRV</td></tr><tr><td>IAS 7 Cash Flows</td><td><span class="status ok">COMPLIANT</span></td><td style="font-size:11px;color:#64748B">Cash flow classification policy documented: 'operating'</td></tr><tr><td>IAS 12 Income Taxes</td><td><span class="status ok">COMPLIANT</span></td><td style="font-size:11px;color:#64748B">Deferred tax balances assessed per IAS 12</td></tr><tr><td>IAS 16 PPE</td><td><span class="status warn">DISCLOSURE_REQUIRED</span></td><td style="font-size:11px;color:#64748B">Depreciation method not documented — required disclosure per IAS 16.73</td></tr><tr><td>IAS 33 EPS</td><td><span class="status ok">COMPLIANT</span></td><td style="font-size:11px;color:#64748B">EPS: Basic $0.0, Diluted $0.0</td></tr><tr><td>IAS 36 Impairment</td><td><span class="status warn">DISCLOSURE_REQUIRED</span></td><td style="font-size:11px;color:#64748B">Impairment tested at wrong level — IAS 36.65: goodwill allocated to CGUs, tested at CGU (o</td></tr><tr><td>IAS 37 Provisions</td><td><span class="status ok">COMPLIANT</span></td><td style="font-size:11px;color:#64748B">Provisions assessed per IAS 37</td></tr><tr><td>IAS 38 Intangibles</td><td><span class="status ok">COMPLIANT</span></td><td style="font-size:11px;color:#64748B">Intangible asset policy assessed per IAS 38</td></tr><tr><td>IFRS 9 ECL</td><td><span class="status ok">COMPLIANT</span></td><td style="font-size:11px;color:#64748B">ECL allowance $42,000 assessed across 3 stages</td></tr><tr><td>IFRS 15 Revenue</td><td><span class="status ok">COMPLIANT</span></td><td style="font-size:11px;color:#64748B">Revenue $6,240,000 recognized per IFRS 15 (converged with ASC 606)</td></tr><tr><td>IFRS 16 Leases</td><td><span class="status ok">COMPLIANT</span></td><td style="font-size:11px;color:#64748B">ROU assets $840,000 — IFRS 16 single model applied; EBITDA ~$96,000 higher vs GAAP ASC 842</td></tr></tbody></table>
+  </div>
+</div>
+
+<!-- RAG -->
+<div class="card">
+  <div class="section-title">RAG — Retrieved Knowledge (Anti-Hallucination Layer)</div>
+  <div style="padding:10px 0;border-bottom:1px solid rgba(255,255,255,.06)"><div style="font-size:12px;color:#60A5FA;margin-bottom:4px">[1] ASC 606 Revenue Recognition</div><p style="font-size:11px;color:#64748B;margin:0">Revenue is recognised when/as performance obligations are satisfied....</p></div><div style="padding:10px 0;border-bottom:1px solid rgba(255,255,255,.06)"><div style="font-size:12px;color:#60A5FA;margin-bottom:4px">[2] ASC 842 Lease Standard</div><p style="font-size:11px;color:#64748B;margin:0">Lessees must recognise a right-of-use asset and lease liability for all leases....</p></div><div style="padding:10px 0;border-bottom:1px solid rgba(255,255,255,.06)"><div style="font-size:12px;color:#60A5FA;margin-bottom:4px">[3] IAS 36 Impairment</div><p style="font-size:11px;color:#64748B;margin:0">Assets tested for impairment when indicators exist; CGU recoverable amount vs carrying value....</p></div><div style="padding:10px 0;border-bottom:1px solid rgba(255,255,255,.06)"><div style="font-size:12px;color:#60A5FA;margin-bottom:4px">[4] SAB 99 Materiality</div><p style="font-size:11px;color:#64748B;margin:0">Items are material if substantial likelihood a reasonable investor would consider them important....</p></div>
+</div>
+
+<div class="agent-section">
+  <div class="agent-header">
+    <div class="agent-title">&#x1F916; AI Agent Analysis — CFO Overview</div>
+    <span class="agent-badge zero-llm">Zero-LLM Math</span>
+    <span class="agent-badge deterministic">100% Deterministic</span>
+    <span class="agent-badge">Anti-Hallucination</span>
+  </div>
+  <div class="agent-summary"><p>Horizon Community Foundation reports $6.2M revenue for FY 2025, <b style='color:#10B981'>54.9% above budget</b>. Gross margin of <b>80.0%</b> and EBITDA margin of <b>20.0%</b> indicate a <b>strong</b> operating profile. GAAP compliance: <b style='color:#10B981'>10/12</b>. IFRS compliance: <b style='color:#A78BFA'>10/12</b>. All figures sourced from deterministic math engine — zero LLM calculation.</p></div>
+  <div class="findings-grid"><div class="finding ok"><div class="finding-top"><span class="finding-title">Gross Margin 80.0% — Excellent</span><span class="finding-source">Math Engine</span></div><div class="finding-body">Above 70% SaaS/high-margin benchmark. Gross profit $5.0M signals strong pricing power and low variable cost structure.</div><div class="finding-citation">SAB 99 · ASC 606</div></div><div class="finding warn"><div class="finding-top"><span class="finding-title">EBITDA Margin 20.0% — Watch</span><span class="finding-source">Math Engine</span></div><div class="finding-body">Below 20% target. Operating expenses of $3.7M are compressing margins.</div></div><div class="finding ok"><div class="finding-top"><span class="finding-title">Current Ratio 2.14x — Healthy</span><span class="finding-source">Math Engine</span></div><div class="finding-body">Current assets $4.2M cover current liabilities $2.0M comfortably. No going concern risk.</div><div class="finding-citation">ASC 205-40</div></div><div class="finding ok"><div class="finding-top"><span class="finding-title">Revenue +54.9% vs Budget — Favorable</span><span class="finding-source">Math Engine</span></div><div class="finding-body">Outperformance of $8.0M. SAB 99 materiality threshold exceeded — disclose in MD&A.</div><div class="finding-citation">SAB 99</div></div><div class="finding warn"><div class="finding-top"><span class="finding-title">DSO 49 Days — Watch</span><span class="finding-source">Math Engine</span></div><div class="finding-body">AR $840K taking 49 days to collect. Review credit terms and CECL allowance.</div><div class="finding-citation">ASC 310/326 CECL</div></div><div class="finding ok"><div class="finding-top"><span class="finding-title">Interest Coverage 25.3x — Strong</span><span class="finding-source">Math Engine</span></div><div class="finding-body">EBIT of $1.1M covers interest $42K comfortably. Low default risk.</div><div class="finding-citation">ASC 740</div></div><div class="finding warn"><div class="finding-top"><span class="finding-title">Disclosure Required: ASC 280</span><span class="finding-source">GAAP Engine</span></div><div class="finding-body">Multiple operating segments identified — segment disclosures required (ASC 280-10-50)</div><div class="finding-citation">ASC 280</div></div><div class="finding warn"><div class="finding-top"><span class="finding-title">Disclosure Required: SAB 99 / ASC 250</span><span class="finding-source">GAAP Engine</span></div><div class="finding-body">6 material variance items identified (≥5% threshold)</div><div class="finding-citation">SAB 99 / ASC 250</div></div></div>
+  <div class='section-title' style='margin-top:4px'>Recommended Actions</div><ul class='action-list'><li><span class="action-num">1</span><span>FP&A: Tighten AR collections — implement 30-day collection target, review credit terms (deadline: 45 days)</span></li></ul>
+</div>
+
+
+<div class="dash-footer">
+  <div>
+    <div class="dash-footer-brand">AI CFO System &mdash; Multi-Agent Financial Intelligence</div>
+    <div>Deterministic Math Engine &middot; Zero-LLM Calculation &middot; 4-Layer Anti-Hallucination Architecture &middot; Pydantic Schema Validation</div>
+  </div>
+  <div style="text-align:right">
+    <div>GAAP ASC 2026 &middot; IFRS IASB &middot; SAB 99 Materiality &middot; ASC 330 / IAS 2 Inventory</div>
+    <div style="margin-top:3px">All figures computed deterministically from source data. No estimates or LLM outputs used in calculations.</div>
+  </div>
+</div>
+</div>
+</body>
+</html>

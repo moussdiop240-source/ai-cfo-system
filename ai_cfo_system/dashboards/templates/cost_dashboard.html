@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Monthly Cost Analysis Dashboard</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#04060F;color:#F1F5F9;font-family:'Segoe UI',system-ui,sans-serif;min-width:900px}
+@keyframes fadeInUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes glow-pulse{0%,100%{box-shadow:0 0 20px rgba(0,255,200,0.15),0 0 40px rgba(0,255,200,0.08)}50%{box-shadow:0 0 30px rgba(0,255,200,0.3),0 0 60px rgba(0,255,200,0.15)}}
+@keyframes pulse-dot{0%,100%{opacity:1}50%{opacity:0.3}}
+.container{max-width:1400px;margin:0 auto;padding:24px}
+.header{background:linear-gradient(135deg,rgba(11,17,32,0.95),rgba(4,6,15,0.98));border:1px solid rgba(0,255,200,0.2);border-radius:16px;padding:24px 32px;margin-bottom:24px;animation:fadeInUp 0.5s ease;backdrop-filter:blur(20px)}
+.header-top{display:flex;justify-content:space-between;align-items:center}
+.company-name{font-size:28px;font-weight:700;background:linear-gradient(135deg,#00FFC8,#60A5FA);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.title{font-size:14px;color:#4E6880;margin-top:4px}
+.badges{display:flex;gap:12px;align-items:center}
+.badge{padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600}
+.badge-period{background:rgba(96,165,250,0.15);border:1px solid rgba(96,165,250,0.3);color:#60A5FA}
+.live-dot{width:8px;height:8px;background:#00FFC8;border-radius:50%;display:inline-block;margin-right:6px;animation:pulse-dot 1.5s infinite}
+.badge-live{background:rgba(0,255,200,0.1);border:1px solid rgba(0,255,200,0.3);color:#00FFC8}
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;animation:fadeInUp 0.6s ease}
+.kpi-card{background:rgba(11,17,32,0.8);backdrop-filter:blur(20px);border-radius:12px;padding:20px;border:1px solid rgba(255,255,255,0.08);transition:all 0.3s ease}
+.kpi-card:hover{transform:translateY(-2px)}
+.kpi-card.cyan{border-color:rgba(0,255,200,0.2);box-shadow:0 0 20px rgba(0,255,200,0.08)}
+.kpi-card.red{border-color:rgba(248,113,113,0.2);box-shadow:0 0 20px rgba(248,113,113,0.08)}
+.kpi-card.amber{border-color:rgba(251,191,36,0.2);box-shadow:0 0 20px rgba(251,191,36,0.08)}
+.kpi-card.blue{border-color:rgba(96,165,250,0.2);box-shadow:0 0 20px rgba(96,165,250,0.08)}
+.kpi-label{font-size:12px;color:#4E6880;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.05em}
+.kpi-value{font-size:28px;font-weight:700;font-family:'Courier New',monospace;letter-spacing:-1px}
+.kpi-value.cyan{color:#00FFC8;text-shadow:0 0 15px rgba(0,255,200,0.6)}
+.kpi-value.red{color:#F87171;text-shadow:0 0 15px rgba(248,113,113,0.6)}
+.kpi-value.amber{color:#FBBF24;text-shadow:0 0 15px rgba(251,191,36,0.6)}
+.kpi-value.blue{color:#60A5FA;text-shadow:0 0 15px rgba(96,165,250,0.6)}
+.kpi-delta{font-size:12px;margin-top:6px;font-weight:500}
+.delta-pos{color:#10B981}.delta-neg{color:#F87171}
+.chart-card{background:rgba(11,17,32,0.8);backdrop-filter:blur(20px);border-radius:12px;padding:24px;border:1px solid rgba(255,255,255,0.08);margin-bottom:24px;animation:fadeInUp 0.7s ease}
+.chart-title{font-size:14px;font-weight:600;color:#94A3B8;margin-bottom:20px;text-transform:uppercase;letter-spacing:0.05em}
+.chart-row{display:grid;grid-template-columns:1fr 280px;gap:24px;margin-bottom:24px}
+svg text{font-family:'Segoe UI',system-ui,sans-serif}
+.table-card{background:rgba(11,17,32,0.8);backdrop-filter:blur(20px);border-radius:12px;border:1px solid rgba(255,255,255,0.08);overflow:hidden;margin-bottom:24px}
+table{width:100%;border-collapse:collapse}
+th{background:#0B1120;color:#4E6880;font-size:11px;font-weight:600;text-transform:uppercase;padding:12px 16px;text-align:right;border-bottom:1px solid rgba(255,255,255,0.08)}
+th:first-child{text-align:left}
+td{padding:12px 16px;font-size:13px;text-align:right;border-bottom:1px solid rgba(255,255,255,0.04)}
+td:first-child{text-align:left;color:#94A3B8}
+tr:nth-child(even){background:rgba(255,255,255,0.02)}
+tr:hover{background:rgba(0,255,200,0.04)}
+.status{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;padding:3px 10px;border-radius:12px}
+.status.ok{background:rgba(16,185,129,0.15);color:#10B981}
+.status.warn{background:rgba(251,191,36,0.15);color:#FBBF24}
+.status.bad{background:rgba(248,113,113,0.15);color:#F87171}
+.insights-row{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;animation:fadeInUp 0.8s ease}
+.insight-card{background:rgba(11,17,32,0.8);border-radius:12px;padding:20px;border-left:3px solid;transition:all 0.3s ease}
+.insight-card.positive{border-color:#10B981;background:rgba(16,185,129,0.05)}
+.insight-card.warning{border-color:#FBBF24;background:rgba(251,191,36,0.05)}
+.insight-card.negative{border-color:#F87171;background:rgba(248,113,113,0.05)}
+.insight-card:hover{transform:translateY(-2px)}
+.insight-title{font-size:13px;font-weight:600;margin-bottom:8px}
+.insight-body{font-size:12px;color:#94A3B8;line-height:1.6}
+</style>
+</head>
+<body>
+<div class="container">
+
+<!-- Header -->
+<div class="header">
+  <div class="header-top">
+    <div>
+      <div class="company-name" id="companyName">Acme Corp</div>
+      <div class="title">Monthly Cost Analysis Dashboard</div>
+    </div>
+    <div class="badges">
+      <span class="badge badge-period" id="periodBadge">Q1 2025</span>
+      <span class="badge badge-live"><span class="live-dot"></span>LIVE</span>
+    </div>
+  </div>
+</div>
+
+<!-- KPI Cards -->
+<div class="kpi-row">
+  <div class="kpi-card red">
+    <div class="kpi-label">Total Costs</div>
+    <div class="kpi-value red" id="totalCosts">$9.8M</div>
+    <div class="kpi-delta delta-neg" id="costsDelta">▲ +8.2% vs budget</div>
+  </div>
+  <div class="kpi-card amber">
+    <div class="kpi-label">COGS % of Revenue</div>
+    <div class="kpi-value amber" id="cogsPct">41.8%</div>
+    <div class="kpi-delta delta-pos" id="cogsDelta">▼ -1.2pp vs budget</div>
+  </div>
+  <div class="kpi-card blue">
+    <div class="kpi-label">SG&A % of Revenue</div>
+    <div class="kpi-value blue" id="sgaPct">26.2%</div>
+    <div class="kpi-delta delta-neg" id="sgaDelta">▲ +0.4pp vs budget</div>
+  </div>
+  <div class="kpi-card" style="border-color:rgba(167,139,250,0.2);box-shadow:0 0 20px rgba(167,139,250,0.08)">
+    <div class="kpi-label">R&D % of Revenue</div>
+    <div class="kpi-value" style="color:#A78BFA;text-shadow:0 0 15px rgba(167,139,250,0.6)" id="rdPct">10.4%</div>
+    <div class="kpi-delta delta-pos" id="rdDelta">▼ -0.3pp vs budget</div>
+  </div>
+</div>
+
+<!-- Waterfall Chart -->
+<div class="chart-card">
+  <div class="chart-title">Revenue → EBITDA Waterfall</div>
+  <svg id="waterfall" width="100%" height="280" viewBox="0 0 900 280"></svg>
+</div>
+
+<!-- Monthly Trend + Donut -->
+<div class="chart-row">
+  <div class="chart-card" style="margin-bottom:0">
+    <div class="chart-title">Monthly Cost Trend</div>
+    <svg id="trendChart" width="100%" height="240" viewBox="0 0 620 240"></svg>
+  </div>
+  <div class="chart-card" style="margin-bottom:0">
+    <div class="chart-title">Cost Mix</div>
+    <svg id="donutChart" width="100%" height="240" viewBox="0 0 260 240"></svg>
+  </div>
+</div>
+<div style="margin-bottom:24px"></div>
+
+<!-- Cost Table -->
+<div class="table-card">
+  <table>
+    <thead>
+      <tr>
+        <th style="text-align:left">Month</th>
+        <th>COGS ($K)</th>
+        <th>SG&A ($K)</th>
+        <th>R&D ($K)</th>
+        <th>Total ($K)</th>
+        <th>Δ Budget</th>
+        <th>Δ%</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody id="costTableBody"></tbody>
+  </table>
+</div>
+
+<!-- Insights -->
+<div class="insights-row">
+  <div class="insight-card positive">
+    <div class="insight-title" style="color:#10B981">✓ Gross Margin Expansion</div>
+    <div class="insight-body">COGS efficiency improved by 1.2pp vs budget driven by product mix shift toward higher-margin SaaS offerings (ASC 606 variable consideration).</div>
+  </div>
+  <div class="insight-card warning">
+    <div class="insight-title" style="color:#FBBF24">⚠ SG&A Above Plan</div>
+    <div class="insight-body">SG&A 0.4pp over budget due to Q1 sales headcount onboarding. FY impact: ~$200K if trend continues. CFO review recommended (SAB 99 materiality).</div>
+  </div>
+  <div class="insight-card negative">
+    <div class="insight-title" style="color:#F87171">✗ IFRS 16 vs ASC 842 Gap</div>
+    <div class="insight-body">Operating lease costs of $180K in SG&A under GAAP. Under IFRS 16 single model, EBITDA would be $180K higher. Jurisdiction review pending.</div>
+  </div>
+</div>
+
+</div>
+<script>
+// ── Data ────────────────────────────────────────────────────────────────────
+const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const COGS   = [950,980,1020,1010,1050,1080,1060,1090,1100,1120,1140,1160];
+const SGA    = [680,700,710,720,735,740,750,755,760,775,780,790];
+const RD     = [280,285,290,295,300,305,310,310,315,320,325,330];
+const TOTAL  = COGS.map((c,i) => c + SGA[i] + RD[i]);
+const BUDGET = TOTAL.map(t => Math.round(t * 0.97));
+
+// ── Waterfall ────────────────────────────────────────────────────────────────
+(function(){
+  const data=[
+    {label:"Revenue",value:12500,type:"positive"},
+    {label:"COGS",value:-5225,type:"negative"},
+    {label:"Gross Profit",value:7275,type:"subtotal"},
+    {label:"SG&A",value:-3275,type:"negative"},
+    {label:"R&D",value:-1300,type:"negative"},
+    {label:"D&A",value:-340,type:"negative"},
+    {label:"EBITDA",value:2800,type:"subtotal"},
+  ];
+  const svg=document.getElementById("waterfall");
+  const W=900,H=280,pad={l:70,r:20,t:20,b:60},bw=80,gap=20;
+  const nBars=data.length;
+  const barW=Math.min(bw,(W-pad.l-pad.r-(nBars-1)*gap)/nBars);
+  const allVals=[];
+  let running=0;
+  data.forEach(d=>{
+    if(d.type==="subtotal") allVals.push(d.value);
+    else allVals.push(running,running+d.value);
+    if(d.type!=="subtotal") running+=d.value;
+  });
+  const minV=Math.min(0,...allVals);
+  const maxV=Math.max(...allVals);
+  const range=maxV-minV||1;
+  const chartH=H-pad.t-pad.b;
+  const scale=v=>pad.t+chartH-((v-minV)/range)*chartH;
+
+  let ns="http://www.w3.org/2000/svg";
+  // Grid
+  for(let g=0;g<=5;g++){
+    const yv=minV+(maxV-minV)/5*g;
+    const y=scale(yv);
+    const line=document.createElementNS(ns,"line");
+    line.setAttribute("x1",pad.l);line.setAttribute("x2",W-pad.r);
+    line.setAttribute("y1",y);line.setAttribute("y2",y);
+    line.setAttribute("stroke","rgba(255,255,255,0.05)");line.setAttribute("stroke-width","1");
+    svg.appendChild(line);
+    const label=document.createElementNS(ns,"text");
+    label.setAttribute("x",pad.l-6);label.setAttribute("y",y+4);
+    label.setAttribute("text-anchor","end");label.setAttribute("fill","#4E6880");label.setAttribute("font-size","10");
+    label.textContent="$"+(yv/1000).toFixed(0)+"M";
+    svg.appendChild(label);
+  }
+
+  let baseline=0;
+  data.forEach((d,i)=>{
+    const x=pad.l+i*(barW+gap);
+    let barY,barH;
+    if(d.type==="subtotal"){
+      const top=scale(Math.max(0,d.value));
+      const bot=scale(0);
+      barY=top;barH=Math.abs(bot-top);
+    } else {
+      const from=scale(baseline);
+      const to=scale(baseline+d.value);
+      barY=Math.min(from,to);barH=Math.abs(to-from);
+      if(barH<2)barH=2;
+    }
+    const col=d.type==="subtotal"?"#FBBF24":d.type==="positive"?"#00FFC8":"#F87171";
+    const rect=document.createElementNS(ns,"rect");
+    rect.setAttribute("x",x);rect.setAttribute("y",barY);
+    rect.setAttribute("width",barW);rect.setAttribute("height",barH);
+    rect.setAttribute("fill",col);rect.setAttribute("opacity","0.85");
+    rect.setAttribute("rx","3");
+    svg.appendChild(rect);
+
+    // Value label
+    const vlabel=document.createElementNS(ns,"text");
+    vlabel.setAttribute("x",x+barW/2);vlabel.setAttribute("y",barY-(d.value<0?-14:4));
+    vlabel.setAttribute("text-anchor","middle");vlabel.setAttribute("fill",col);vlabel.setAttribute("font-size","11");vlabel.setAttribute("font-weight","600");
+    vlabel.textContent="$"+(Math.abs(d.value)/1000).toFixed(1)+"M";
+    svg.appendChild(vlabel);
+
+    // X-label
+    const xl=document.createElementNS(ns,"text");
+    xl.setAttribute("x",x+barW/2);xl.setAttribute("y",H-pad.b+18);
+    xl.setAttribute("text-anchor","middle");xl.setAttribute("fill","#94A3B8");xl.setAttribute("font-size","10");
+    xl.textContent=d.label;
+    svg.appendChild(xl);
+
+    // Connector line
+    if(i<data.length-1&&d.type!=="subtotal"){
+      const nextBaseline=d.type==="subtotal"?d.value:baseline+d.value;
+      const connY=scale(nextBaseline);
+      const conn=document.createElementNS(ns,"line");
+      conn.setAttribute("x1",x+barW);conn.setAttribute("x2",x+barW+gap);
+      conn.setAttribute("y1",connY);conn.setAttribute("y2",connY);
+      conn.setAttribute("stroke","rgba(255,255,255,0.2)");conn.setAttribute("stroke-width","1");conn.setAttribute("stroke-dasharray","3,2");
+      svg.appendChild(conn);
+    }
+
+    if(d.type!=="subtotal") baseline+=d.value;
+    else baseline=d.value;
+  });
+})();
+
+// ── Monthly Trend Chart ───────────────────────────────────────────────────────
+(function(){
+  const svg=document.getElementById("trendChart");
+  const W=620,H=240,pad={l:50,r:20,t:20,b:40};
+  const allVals=[...COGS,...SGA,...RD];
+  const maxV=Math.max(...allVals)+100,minV=0;
+  const scale=v=>pad.t+(H-pad.t-pad.b)*(1-(v-minV)/(maxV-minV));
+  const xScale=i=>pad.l+i*(W-pad.l-pad.r)/(MONTHS.length-1);
+  const ns="http://www.w3.org/2000/svg";
+  const colors=["#F87171","#60A5FA","#A78BFA"];
+  const labels=["COGS","SG&A","R&D"];
+  const datasets=[COGS,SGA,RD];
+
+  // Grid
+  for(let g=0;g<=4;g++){
+    const yv=minV+(maxV-minV)/4*g;
+    const y=scale(yv);
+    const line=document.createElementNS(ns,"line");
+    line.setAttribute("x1",pad.l);line.setAttribute("x2",W-pad.r);
+    line.setAttribute("y1",y);line.setAttribute("y2",y);
+    line.setAttribute("stroke","rgba(255,255,255,0.05)");svg.appendChild(line);
+    const t=document.createElementNS(ns,"text");
+    t.setAttribute("x",pad.l-6);t.setAttribute("y",y+4);
+    t.setAttribute("text-anchor","end");t.setAttribute("fill","#4E6880");t.setAttribute("font-size","10");
+    t.textContent="$"+yv+"K";svg.appendChild(t);
+  }
+
+  datasets.forEach((data,si)=>{
+    // Area
+    const areaPath="M "+xScale(0)+","+H-pad.b+" "+data.map((v,i)=>xScale(i)+","+scale(v)).join(" ")+" "+xScale(MONTHS.length-1)+","+(H-pad.b)+" Z";
+    const area=document.createElementNS(ns,"path");
+    area.setAttribute("d",areaPath);area.setAttribute("fill",colors[si]);area.setAttribute("opacity","0.07");
+    svg.appendChild(area);
+    // Line
+    const linePath="M "+data.map((v,i)=>xScale(i)+","+scale(v)).join(" L ");
+    const line=document.createElementNS(ns,"path");
+    line.setAttribute("d",linePath);line.setAttribute("stroke",colors[si]);line.setAttribute("stroke-width","2");line.setAttribute("fill","none");
+    svg.appendChild(line);
+    // Dots
+    data.forEach((v,i)=>{
+      const c=document.createElementNS(ns,"circle");
+      c.setAttribute("cx",xScale(i));c.setAttribute("cy",scale(v));c.setAttribute("r","3");c.setAttribute("fill",colors[si]);
+      svg.appendChild(c);
+    });
+  });
+
+  // X axis
+  MONTHS.forEach((m,i)=>{
+    const t=document.createElementNS(ns,"text");
+    t.setAttribute("x",xScale(i));t.setAttribute("y",H-pad.b+16);
+    t.setAttribute("text-anchor","middle");t.setAttribute("fill","#4E6880");t.setAttribute("font-size","10");
+    t.textContent=m;svg.appendChild(t);
+  });
+
+  // Legend
+  labels.forEach((lbl,i)=>{
+    const dot=document.createElementNS(ns,"circle");
+    dot.setAttribute("cx",pad.l+i*80);dot.setAttribute("cy",pad.t-6);dot.setAttribute("r","5");dot.setAttribute("fill",colors[i]);
+    svg.appendChild(dot);
+    const t=document.createElementNS(ns,"text");
+    t.setAttribute("x",pad.l+i*80+10);t.setAttribute("y",pad.t-2);t.setAttribute("fill","#94A3B8");t.setAttribute("font-size","11");
+    t.textContent=lbl;svg.appendChild(t);
+  });
+})();
+
+// ── Donut Chart ───────────────────────────────────────────────────────────────
+(function(){
+  const svg=document.getElementById("donutChart");
+  const cx=130,cy=110,r=80,ri=52;
+  const data=[{label:"COGS",value:5225,color:"#F87171"},{label:"SG&A",value:3275,color:"#60A5FA"},{label:"R&D",value:1300,color:"#A78BFA"},{label:"D&A",value:340,color:"#64748B"}];
+  const total=data.reduce((a,d)=>a+d.value,0);
+  const ns="http://www.w3.org/2000/svg";
+  let angle=-Math.PI/2;
+  data.forEach(d=>{
+    const sweep=2*Math.PI*d.value/total;
+    const x1=cx+r*Math.cos(angle),y1=cy+r*Math.sin(angle);
+    const x2=cx+r*Math.cos(angle+sweep),y2=cy+r*Math.sin(angle+sweep);
+    const xi1=cx+ri*Math.cos(angle),yi1=cy+ri*Math.sin(angle);
+    const xi2=cx+ri*Math.cos(angle+sweep),yi2=cy+ri*Math.sin(angle+sweep);
+    const large=sweep>Math.PI?1:0;
+    const path=document.createElementNS(ns,"path");
+    path.setAttribute("d",`M ${xi1} ${yi1} L ${x1} ${y1} A ${r} ${r} 0 ${large} 1 ${x2} ${y2} L ${xi2} ${yi2} A ${ri} ${ri} 0 ${large} 0 ${xi1} ${yi1} Z`);
+    path.setAttribute("fill",d.color);path.setAttribute("opacity","0.85");
+    path.setAttribute("style","cursor:pointer;transition:opacity 0.2s");
+    path.addEventListener("mouseenter",()=>path.setAttribute("opacity","1"));
+    path.addEventListener("mouseleave",()=>path.setAttribute("opacity","0.85"));
+    svg.appendChild(path);
+    angle+=sweep;
+  });
+  // Center label
+  const ct=document.createElementNS(ns,"text");
+  ct.setAttribute("x",cx);ct.setAttribute("y",cy-6);ct.setAttribute("text-anchor","middle");ct.setAttribute("fill","#94A3B8");ct.setAttribute("font-size","10");ct.textContent="Total";svg.appendChild(ct);
+  const cv=document.createElementNS(ns,"text");
+  cv.setAttribute("x",cx);cv.setAttribute("y",cy+12);cv.setAttribute("text-anchor","middle");cv.setAttribute("fill","#00FFC8");cv.setAttribute("font-size","15");cv.setAttribute("font-weight","700");cv.textContent="$10.1M";svg.appendChild(cv);
+  // Legend
+  data.forEach((d,i)=>{
+    const lx=10,ly=200+i*14;
+    const dot=document.createElementNS(ns,"rect");
+    dot.setAttribute("x",lx);dot.setAttribute("y",ly-8);dot.setAttribute("width","10");dot.setAttribute("height","10");dot.setAttribute("fill",d.color);dot.setAttribute("rx","2");svg.appendChild(dot);
+    const pct=(d.value/total*100).toFixed(1);
+    const t=document.createElementNS(ns,"text");
+    t.setAttribute("x",lx+14);t.setAttribute("y",ly);t.setAttribute("fill","#94A3B8");t.setAttribute("font-size","10");t.textContent=`${d.label} ${pct}%`;svg.appendChild(t);
+  });
+})();
+
+// ── Table ─────────────────────────────────────────────────────────────────────
+(function(){
+  const tbody=document.getElementById("costTableBody");
+  MONTHS.forEach((m,i)=>{
+    const total=COGS[i]+SGA[i]+RD[i];
+    const delta=total-BUDGET[i];
+    const deltaPct=(delta/BUDGET[i]*100).toFixed(1);
+    const status=Math.abs(delta)<50?'<span class="status ok">✓ ON TRACK</span>':delta>0?'<span class="status warn">⚠ OVER</span>':'<span class="status ok">✓ UNDER</span>';
+    const tr=document.createElement("tr");
+    tr.innerHTML=`<td>${m} 2025</td><td>$${COGS[i].toLocaleString()}K</td><td>$${SGA[i].toLocaleString()}K</td><td>$${RD[i].toLocaleString()}K</td><td>$${total.toLocaleString()}K</td><td style="color:${delta>0?'#F87171':'#10B981'}">${delta>0?'+':''}$${delta}K</td><td style="color:${delta>0?'#F87171':'#10B981'}">${deltaPct>0?'+':''}${deltaPct}%</td><td>${status}</td>`;
+    tbody.appendChild(tr);
+  });
+})();
+</script>
+</body>
+</html>
