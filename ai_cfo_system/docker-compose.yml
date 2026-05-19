@@ -1,0 +1,49 @@
+version: "3.9"
+
+services:
+  # ── FastAPI Backend ────────────────────────────────────────────────────────
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://cfo_user:cfo_pass@db:5432/ai_cfo_db
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - ENVIRONMENT=production
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app/backend
+    command: uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload
+
+  # ── PostgreSQL + pgvector ──────────────────────────────────────────────────
+  db:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_DB: ai_cfo_db
+      POSTGRES_USER: cfo_user
+      POSTGRES_PASSWORD: cfo_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./backend/database/migrations/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cfo_user -d ai_cfo_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # ── Nginx reverse proxy ────────────────────────────────────────────────────
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - api
+
+volumes:
+  pgdata:
