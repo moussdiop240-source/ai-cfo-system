@@ -126,6 +126,183 @@ def run_deterministic(data, company, period):
     )
 
 
+# ── Excel upload helpers ──────────────────────────────────────────────────────
+_UPLOAD_FIELDS = [
+    ("INCOME STATEMENT",  "revenue",                    12_840_000, "Total net revenue"),
+    ("INCOME STATEMENT",  "cogs",                        3_594_000, "Cost of goods sold"),
+    ("INCOME STATEMENT",  "gross_profit",                9_246_000, "Revenue − COGS"),
+    ("INCOME STATEMENT",  "operating_expenses",          6_120_000, "Total operating expenses"),
+    ("INCOME STATEMENT",  "rd_expense",                  2_430_000, "Research & development"),
+    ("INCOME STATEMENT",  "sg_a_expense",                3_690_000, "SG&A expense"),
+    ("INCOME STATEMENT",  "ebitda",                      3_126_000, "EBITDA"),
+    ("INCOME STATEMENT",  "depreciation",                  312_000, "Depreciation & amortization"),
+    ("INCOME STATEMENT",  "ebit",                        2_814_000, "EBIT"),
+    ("INCOME STATEMENT",  "interest_expense",              210_000, "Net interest expense"),
+    ("INCOME STATEMENT",  "pre_tax_income",              2_604_000, "Pre-tax income (EBT)"),
+    ("INCOME STATEMENT",  "tax_provision",                 573_000, "Income tax provision"),
+    ("INCOME STATEMENT",  "net_income",                  2_031_000, "Net income"),
+    ("BALANCE SHEET",     "total_assets",               58_400_000, "Total assets"),
+    ("BALANCE SHEET",     "current_assets",             24_100_000, "Current assets"),
+    ("BALANCE SHEET",     "cash",                       11_250_000, "Cash & cash equivalents"),
+    ("BALANCE SHEET",     "accounts_receivable",         8_640_000, "Net accounts receivable"),
+    ("BALANCE SHEET",     "inventory",                     210_000, "Inventory"),
+    ("BALANCE SHEET",     "prepaid_expenses",            4_000_000, "Prepaid expenses"),
+    ("BALANCE SHEET",     "total_equity",               34_200_000, "Total stockholders equity"),
+    ("BALANCE SHEET",     "current_liabilities",         9_800_000, "Current liabilities"),
+    ("BALANCE SHEET",     "accounts_payable",            3_150_000, "Accounts payable"),
+    ("BALANCE SHEET",     "deferred_revenue",            4_200_000, "Deferred revenue"),
+    ("BALANCE SHEET",     "total_debt",                 14_000_000, "Total debt"),
+    ("BALANCE SHEET",     "long_term_debt",             11_800_000, "Long-term debt"),
+    ("BALANCE SHEET",     "goodwill",                    9_600_000, "Goodwill (ASC 350 / IAS 36)"),
+    ("BALANCE SHEET",     "rou_assets",                  4_800_000, "Right-of-use assets (ASC 842)"),
+    ("BALANCE SHEET",     "lease_liability",             4_620_000, "Lease liability (ASC 842)"),
+    ("BALANCE SHEET",     "allowance_for_credit_losses",   432_000, "ACL / ECL (CECL / IFRS 9)"),
+    ("CASH FLOW",         "cash_from_operations",        3_840_000, "Net cash from operations"),
+    ("CASH FLOW",         "capex",                         780_000, "Capital expenditures"),
+    ("CASH FLOW",         "free_cash_flow",              3_060_000, "FCF = Operating CF − CapEx"),
+    ("CASH FLOW",         "monthly_cash_burn",                   0, "Monthly cash burn (0 if profitable)"),
+    ("CASH FLOW",         "operating_lease_expense",       360_000, "Operating lease expense"),
+    ("EQUITY",            "shares_outstanding",          8_200_000, "Basic shares outstanding"),
+    ("EQUITY",            "diluted_shares",              8_650_000, "Diluted shares"),
+    ("SAAS METRICS",      "arr",                        51_360_000, "Annual recurring revenue (0 if N/A)"),
+    ("SAAS METRICS",      "nrr_pct",                           118, "Net revenue retention %"),
+    ("SAAS METRICS",      "churn_rate_pct",                    4.2, "Gross churn rate %"),
+    ("SAAS METRICS",      "headcount",                         214, "Total full-time employees"),
+    ("BUDGET VS ACTUALS", "actuals_revenue",            12_840_000, "Actual revenue"),
+    ("BUDGET VS ACTUALS", "actuals_cogs",                3_594_000, "Actual COGS"),
+    ("BUDGET VS ACTUALS", "actuals_gross_profit",        9_246_000, "Actual gross profit"),
+    ("BUDGET VS ACTUALS", "actuals_ebitda",              3_126_000, "Actual EBITDA"),
+    ("BUDGET VS ACTUALS", "actuals_rd_expense",          2_430_000, "Actual R&D"),
+    ("BUDGET VS ACTUALS", "actuals_sg_a",                3_690_000, "Actual SG&A"),
+    ("BUDGET VS ACTUALS", "budget_revenue",             11_500_000, "Budget revenue"),
+    ("BUDGET VS ACTUALS", "budget_cogs",                 3_335_000, "Budget COGS"),
+    ("BUDGET VS ACTUALS", "budget_gross_profit",         8_165_000, "Budget gross profit"),
+    ("BUDGET VS ACTUALS", "budget_ebitda",               2_700_000, "Budget EBITDA"),
+    ("BUDGET VS ACTUALS", "budget_rd_expense",           2_100_000, "Budget R&D"),
+    ("BUDGET VS ACTUALS", "budget_sg_a",                 3_365_000, "Budget SG&A"),
+    ("HISTORICAL REVENUE","hist_q1",                     7_200_000, "Quarter 1 (oldest)"),
+    ("HISTORICAL REVENUE","hist_q2",                     7_810_000, "Quarter 2"),
+    ("HISTORICAL REVENUE","hist_q3",                     8_450_000, "Quarter 3"),
+    ("HISTORICAL REVENUE","hist_q4",                     9_120_000, "Quarter 4"),
+    ("HISTORICAL REVENUE","hist_q5",                     9_980_000, "Quarter 5"),
+    ("HISTORICAL REVENUE","hist_q6",                    10_620_000, "Quarter 6"),
+    ("HISTORICAL REVENUE","hist_q7",                    11_310_000, "Quarter 7"),
+    ("HISTORICAL REVENUE","hist_q8",                    11_870_000, "Quarter 8"),
+    ("HISTORICAL REVENUE","hist_q9",                    12_840_000, "Quarter 9 (most recent)"),
+]
+_UPLOAD_KEYS = {row[1] for row in _UPLOAD_FIELDS}
+
+
+def _make_template() -> bytes:
+    import io as _io
+
+    from openpyxl import Workbook
+    from openpyxl.styles import Alignment, Font, PatternFill
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Financial Data"
+    ws.column_dimensions["A"].width = 30
+    ws.column_dimensions["B"].width = 18
+    ws.column_dimensions["C"].width = 44
+
+    ws.merge_cells("A1:C1")
+    ws["A1"].value = "AI CFO System — Financial Data Template"
+    ws["A1"].font = Font(bold=True, size=14, color="FFFFFF")
+    ws["A1"].fill = PatternFill("solid", fgColor="060D1F")
+    ws["A1"].alignment = Alignment(horizontal="center", vertical="center")
+    ws.row_dimensions[1].height = 24
+
+    ws.merge_cells("A2:C2")
+    ws["A2"].value = "Instructions: fill Column B (blue cells). Do not edit Column A or C."
+    ws["A2"].font = Font(italic=True, size=9, color="6B7280")
+
+    for col, text in [(1, "Field"), (2, "Value"), (3, "Description")]:
+        cell = ws.cell(row=3, column=col, value=text)
+        cell.font = Font(bold=True, color="FFFFFF", size=10)
+        cell.fill = PatternFill("solid", fgColor="1E40AF")
+        cell.alignment = Alignment(horizontal="center")
+
+    SECTION_FILL = PatternFill("solid", fgColor="1E293B")
+    INPUT_FILL   = PatternFill("solid", fgColor="EFF6FF")
+    row, prev_sec = 4, None
+    for section, key, default, desc in _UPLOAD_FIELDS:
+        if section != prev_sec:
+            ws.merge_cells(f"A{row}:C{row}")
+            cell = ws.cell(row=row, column=1, value=section)
+            cell.font = Font(bold=True, color="FFFFFF", size=10)
+            cell.fill = SECTION_FILL
+            ws.row_dimensions[row].height = 18
+            row += 1
+            prev_sec = section
+
+        ws.cell(row=row, column=1, value=key).font = Font(size=10)
+        val = ws.cell(row=row, column=2, value=default)
+        val.font = Font(color="1D4ED8", size=10)
+        val.fill = INPUT_FILL
+        val.alignment = Alignment(horizontal="right")
+        if isinstance(default, float) and default < 100:
+            val.number_format = "0.0"
+        elif isinstance(default, (int, float)) and default >= 1000:
+            val.number_format = "#,##0"
+        ws.cell(row=row, column=3, value=desc).font = Font(color="6B7280", size=9)
+        row += 1
+
+    buf = _io.BytesIO()
+    wb.save(buf)
+    buf.seek(0)
+    return buf.getvalue()
+
+
+def _parse_upload(file_bytes: bytes):
+    import copy
+    import io as _io
+
+    from openpyxl import load_workbook
+
+    wb = load_workbook(_io.BytesIO(file_bytes), data_only=True)
+    ws = wb.active
+    flat = {}
+    for row in ws.iter_rows(min_row=4, values_only=True):
+        key = str(row[0]).strip() if row[0] is not None else ""
+        val = row[1]
+        if key in _UPLOAD_KEYS and val is not None:
+            try:
+                flat[key] = float(val)
+            except (TypeError, ValueError):
+                flat[key] = val
+
+    data = copy.deepcopy(DEFAULT_DATA)
+
+    direct_keys = [
+        "revenue","cogs","gross_profit","operating_expenses","rd_expense","sg_a_expense",
+        "ebitda","depreciation","ebit","interest_expense","pre_tax_income","tax_provision",
+        "net_income","total_assets","current_assets","cash","accounts_receivable","inventory",
+        "prepaid_expenses","total_equity","current_liabilities","accounts_payable",
+        "deferred_revenue","total_debt","long_term_debt","goodwill","rou_assets",
+        "lease_liability","allowance_for_credit_losses","cash_from_operations","capex",
+        "free_cash_flow","monthly_cash_burn","operating_lease_expense",
+        "shares_outstanding","diluted_shares","arr","nrr_pct","churn_rate_pct","headcount",
+    ]
+    for k in direct_keys:
+        if k in flat:
+            data[k] = flat[k]
+
+    actuals = {fld: flat[f"actuals_{fld}"] for fld in ["revenue","cogs","gross_profit","ebitda","rd_expense","sg_a"] if f"actuals_{fld}" in flat}
+    if actuals:
+        data["actuals"] = actuals
+
+    budget = {fld: flat[f"budget_{fld}"] for fld in ["revenue","cogs","gross_profit","ebitda","rd_expense","sg_a"] if f"budget_{fld}" in flat}
+    if budget:
+        data["budget"] = budget
+
+    hist = [flat[f"hist_q{i}"] for i in range(1, 10) if f"hist_q{i}" in flat]
+    if hist:
+        data["historical_revenue"] = hist
+
+    return data, len(flat)
+
+
 # ══════════════════════════════════════════════════════════════════════════════
 #  SIDEBAR
 # ══════════════════════════════════════════════════════════════════════════════
@@ -206,11 +383,33 @@ with st.sidebar:
     st.markdown("### Report Config")
     from data.sample_companies import COMPANIES
     co_options = {f"{v['_meta']['name']} ({v['_meta']['sector']})": k for k, v in COMPANIES.items()}
+    co_options["Upload Excel"] = "_upload"
     co_options["Custom (manual entry)"] = "_custom"
     selected_co_label = st.selectbox("Company Dataset", list(co_options.keys()), index=0)
     selected_co_key   = co_options[selected_co_label]
 
-    if selected_co_key == "_custom":
+    if selected_co_key == "_upload":
+        st.download_button(
+            "⬇ Download Template (.xlsx)",
+            data=_make_template(),
+            file_name="cfo_template.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            use_container_width=True,
+        )
+        uploaded_file = st.file_uploader("Upload completed template", type=["xlsx", "xls"])
+        company = st.text_input("Company Name", value="My Company Inc.")
+        period  = st.text_input("Period", value="Q1 2026")
+        if uploaded_file:
+            try:
+                active_data, n_fields = _parse_upload(uploaded_file.read())
+                st.success(f"✓ {n_fields} fields loaded from Excel")
+            except Exception as e:
+                st.error(f"Parse error: {e}")
+                active_data = DEFAULT_DATA
+        else:
+            st.caption("Download the template, fill in your numbers, then upload it here.")
+            active_data = DEFAULT_DATA
+    elif selected_co_key == "_custom":
         company = st.text_input("Company Name", value="My Company Inc.")
         period  = st.text_input("Period", value="Q1 2026")
         active_data = DEFAULT_DATA
