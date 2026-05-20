@@ -8,7 +8,8 @@ ignore = [
     "E731",   # lambda assignment — intentional in math helpers
     "E741",   # ambiguous variable name (l, O, I) — common in comprehensions
     "E402",   # module import not at top — needed in scripts with sys.path setup
-    "E701",   # multiple statements on one line — used in compact helpers
+    "E701",   # multiple statements on one line (colon) — used in compact helpers
+    "E702",   # multiple statements on one line (semicolon) — used in compact SVG builders
     "F841",   # local variable assigned but never used — cleanup deferred
 ]
 
