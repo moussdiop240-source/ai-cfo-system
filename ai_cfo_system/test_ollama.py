@@ -1,5 +1,9 @@
 """End-to-end Ollama test: deterministic pipeline + AI analysis + 3-round debate."""
-import os, sys, time, io
+import io
+import os
+import sys
+import time
+
 # Force UTF-8 on Windows so LLM output with special chars doesn't crash
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
 sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8", errors="replace")
@@ -8,6 +12,7 @@ os.environ["OLLAMA_MODEL"] = "llama3.2:latest"
 sys.path.insert(0, ".")
 
 from backend.llm.adapter import get_adapter, reset_adapter
+
 reset_adapter()
 a = get_adapter()
 print(f"Backend: {a.active_backend} | Model: {a.active_model} | Health: {a.check_ollama_health()}")
@@ -95,6 +100,7 @@ print("STEP 2 — AI Analysis Agent (Ollama llama3.2:latest)")
 print("="*60)
 t0 = time.time()
 from backend.agents.analysis_agent import analysis_agent_node
+
 out = analysis_agent_node(STATE, backend="ollama")
 elapsed = time.time() - t0
 
@@ -131,6 +137,7 @@ print("STEP 3 — GAAP/IFRS Debate Agent (3 rounds, Ollama)")
 print("="*60)
 t0 = time.time()
 from backend.agents.debate_agent import debate_agent_node
+
 dout = debate_agent_node(STATE, backend="ollama")
 elapsed = time.time() - t0
 

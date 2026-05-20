@@ -2,8 +2,7 @@
 20-document fallback knowledge base.
 Used when pgvector is unavailable — in-memory cosine similarity search.
 """
-from typing import List, Dict, Any
-import math
+from typing import Any, Dict, List
 
 KNOWLEDGE_BASE: List[Dict[str, Any]] = [
     # ── Finance Knowledge (4 docs) ──────────────────────────────────────────

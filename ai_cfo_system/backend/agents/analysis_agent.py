@@ -2,15 +2,13 @@
 Analysis Agent — Claude interprets math outputs + RAG context.
 NEVER calculates. Only interprets, explains, and synthesizes.
 """
-import os
-import json
 from datetime import datetime
-from typing import Dict, Any
+from typing import Dict
 
-from .state import CFOAgentState
-from ..schemas.analysis import AnalysisOutput
-from ..rag.pipeline import format_rag_context, RAGChunk
 from ..llm.adapter import get_adapter, trim_for_local
+from ..rag.pipeline import RAGChunk, format_rag_context
+from ..schemas.analysis import AnalysisOutput
+from .state import CFOAgentState
 
 ANALYSIS_SYSTEM = """You are a senior CFO analyst with 20 years of Big-4 and Fortune 500
 experience. You receive two inputs:
@@ -202,7 +200,8 @@ def analysis_agent_node(
     else:
         # Anthropic path: try Instructor → JSON → raw fallback
         try:
-            import instructor, anthropic as _ant
+            import anthropic as _ant
+            import instructor
             client = instructor.from_anthropic(_ant.Anthropic())
             out = client.messages.create(
                 model=adapter.active_model,

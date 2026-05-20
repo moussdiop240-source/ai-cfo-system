@@ -1,10 +1,12 @@
 """Tests for the RAG pipeline (no pgvector required — uses fallback KB)."""
-import pytest
 import sys
+
+import pytest
+
 sys.path.insert(0, ".")
 
+from backend.rag.knowledge_base import KNOWLEDGE_BASE, keyword_search
 from backend.rag.pipeline import RAGPipeline, format_rag_context
-from backend.rag.knowledge_base import keyword_search, KNOWLEDGE_BASE
 
 
 class TestKnowledgeBase:

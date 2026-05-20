@@ -2,8 +2,7 @@
 GAAP COMPLIANCE ENGINE — 12 FASB ASC Standards.
 DETERMINISTIC — ZERO LLM. Every check is rule-based code.
 """
-from typing import Dict, Any, Optional
-from datetime import datetime
+from typing import Any, Dict
 
 
 class GAAPEngine:
@@ -142,7 +141,7 @@ class GAAPEngine:
 
         if len(segments) > 1 and not data.get("segment_disclosures_present"):
             issues.append(
-                f"Multiple operating segments identified — segment disclosures required (ASC 280-10-50)"
+                "Multiple operating segments identified — segment disclosures required (ASC 280-10-50)"
             )
 
         status = "DISCLOSURE_REQUIRED" if issues else "COMPLIANT"

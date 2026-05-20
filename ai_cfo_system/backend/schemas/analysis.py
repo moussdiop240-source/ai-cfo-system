@@ -1,6 +1,7 @@
-from typing import List, Optional
-from pydantic import BaseModel, Field, field_validator
 import re
+from typing import List
+
+from pydantic import BaseModel, Field, field_validator
 
 
 class AnalysisOutput(BaseModel):

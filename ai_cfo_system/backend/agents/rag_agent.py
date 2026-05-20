@@ -2,10 +2,11 @@
 RAG Agent — retrieves context BEFORE every LLM call.
 Deterministic query construction + pgvector cosine similarity search.
 """
-from datetime import datetime
-from .state import CFOAgentState
-from ..rag.pipeline import RAGPipeline, format_rag_context
 import os
+from datetime import datetime
+
+from ..rag.pipeline import RAGPipeline
+from .state import CFOAgentState
 
 
 def rag_agent_node(state: CFOAgentState) -> CFOAgentState:

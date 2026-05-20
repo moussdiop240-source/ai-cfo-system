@@ -5,17 +5,18 @@ Uses Claude + Pydantic to extract structured financial data from raw input.
 import json
 import os
 from datetime import datetime
-from typing import Any, Dict
+from typing import Dict
 
 import anthropic
+
 try:
     import instructor
     INSTRUCTOR_AVAILABLE = True
 except ImportError:
     INSTRUCTOR_AVAILABLE = False
 
-from .state import CFOAgentState
 from ..schemas.financial import FinancialDataSchema
+from .state import CFOAgentState
 
 DATA_EXTRACTION_SYSTEM = """You are a financial data extraction specialist. Extract structured
 financial data from unstructured input and return ONLY valid JSON

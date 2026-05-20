@@ -1,0 +1,64 @@
+name: CI
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: Test (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12"]
+
+    defaults:
+      run:
+        working-directory: ai_cfo_system
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+          cache-dependency-path: ai_cfo_system/requirements.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-cov ruff
+
+      - name: Lint with Ruff
+        run: python -m ruff check .
+
+      - name: Syntax check - dashboard generators
+        run: python -c "import dashboards.html_generators; print('OK')"
+
+      - name: Smoke tests - pipeline + dashboards
+        run: python tests/smoke_test.py
+
+      - name: Run pytest suite
+        run: >-
+          pytest tests/ -v --tb=short
+          --cov=backend --cov-report=term-missing --cov-report=html
+          --ignore=tests/test_rag_pipeline.py
+          --ignore=tests/smoke_test.py
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+
+      - name: Upload coverage report
+        if: matrix.python-version == '3.11'
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-html
+          path: ai_cfo_system/htmlcov/
+          retention-days: 7

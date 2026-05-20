@@ -3,15 +3,14 @@ DETERMINISTIC MATH ENGINE — ZERO LLM.
 All arithmetic, KPIs, forecasts, anomaly detection via Pandas/NumPy/Sklearn.
 Every number is exact and reproducible.
 """
+from datetime import datetime
+from typing import Any, Dict, List, Optional
+
 import numpy as np
-import pandas as pd
 from sklearn.linear_model import LinearRegression
 from statsmodels.tsa.holtwinters import ExponentialSmoothing
-from typing import Dict, List, Any, Optional
-from datetime import datetime, timedelta
 
 from .state import CFOAgentState
-
 
 APPROVAL_TRIGGERS = {
     "variance_exceeds_10pct":   {"field": "variance_pct",     "threshold": 10.0,  "severity": "high"},

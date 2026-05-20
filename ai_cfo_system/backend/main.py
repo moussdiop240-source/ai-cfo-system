@@ -2,13 +2,11 @@
 AI CFO System — FastAPI entry point.
 Production-grade, multi-agent financial intelligence platform.
 """
-import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
 
+from .api.routes import approvals, debate, rag, stream, tasks
 from .database.session import create_tables
-from .api.routes import tasks, approvals, debate, stream, rag
 
 app = FastAPI(
     title="AI CFO System",

@@ -8,11 +8,11 @@ Priority:
 
 No API key changes needed — just switch LLM_BACKEND or pass backend="ollama".
 """
-import os
 import json
-import httpx
-from typing import Optional, List, Dict, Any
+import os
+from typing import Any, Dict, List, Optional
 
+import httpx
 
 # ── defaults ────────────────────────────────────────────────────────────────
 DEFAULT_ANTHROPIC_MODEL = "claude-sonnet-4-6"

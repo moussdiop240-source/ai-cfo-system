@@ -1,6 +1,8 @@
 """Tests for the deterministic math engine."""
-import pytest
 import sys
+
+import pytest
+
 sys.path.insert(0, ".")
 
 from backend.agents.math_engine import FinancialCalculationEngine

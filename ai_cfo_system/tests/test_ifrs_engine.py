@@ -1,6 +1,8 @@
 """Tests for the IFRS compliance engine (12 IASB standards)."""
-import pytest
 import sys
+
+import pytest
+
 sys.path.insert(0, ".")
 
 from backend.compliance.ifrs_engine import IFRSEngine

@@ -3,7 +3,8 @@ AI CFO DASHBOARD GENERATOR
 Synthetic data for NovaTech Solutions Inc. — Q1 2026
 Runs full deterministic pipeline: Math → GAAP → IFRS → RAG → HTML
 """
-import sys, json, os
+import sys
+
 sys.path.insert(0, ".")
 
 # ── SYNTHETIC FINANCIAL DATA ────────────────────────────────────────────────
@@ -130,7 +131,7 @@ FINANCIAL_DATA = {
 from backend.agents.math_engine import FinancialCalculationEngine
 from backend.compliance.gaap_engine import GAAPEngine
 from backend.compliance.ifrs_engine import IFRSEngine
-from backend.rag.pipeline import RAGPipeline, format_rag_context
+from backend.rag.pipeline import RAGPipeline
 
 engine  = FinancialCalculationEngine()
 gaap_e  = GAAPEngine()
@@ -325,6 +326,7 @@ seg_slices = ""
 offset = 0
 cx, cy, r_outer, r_inner = 120, 110, 90, 52
 import math
+
 for (name, val), color in zip(seg_data, seg_colors):
     pct   = val / seg_total
     angle = pct * 2 * math.pi

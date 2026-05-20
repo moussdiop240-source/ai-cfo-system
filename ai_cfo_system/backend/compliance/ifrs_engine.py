@@ -2,7 +2,7 @@
 IFRS COMPLIANCE ENGINE — 12 IASB Standards.
 DETERMINISTIC — ZERO LLM. Every check is rule-based code.
 """
-from typing import Dict, Any
+from typing import Any, Dict
 
 
 class IFRSEngine:

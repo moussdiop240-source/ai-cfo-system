@@ -1,10 +1,11 @@
+import uuid
+from typing import Any, Dict, Optional
+
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from typing import Optional, Dict, Any
 
 from ...agents.debate_agent import debate_agent_node
 from ...agents.supervisor import create_initial_state
-import uuid
 
 router = APIRouter(prefix="/debate", tags=["debate"])
 
@@ -36,10 +37,10 @@ def run_debate(request: DebateRequest):
     )
 
     # Run math + compliance first to get deterministic inputs for debate
-    from ...agents.math_engine import math_engine_node
+    from ...agents.data_agent import data_agent_node
     from ...agents.gaap_agent import gaap_agent_node
     from ...agents.ifrs_agent import ifrs_agent_node
-    from ...agents.data_agent import data_agent_node
+    from ...agents.math_engine import math_engine_node
 
     state = data_agent_node(state)
     state = math_engine_node(state)
