@@ -1,11 +1,12 @@
 import asyncio
 import json
-from fastapi import APIRouter, HTTPException, Depends
+
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 
-from ...database.session import get_db_dep
 from ...database.models import Task
+from ...database.session import get_db_dep
 
 router = APIRouter(prefix="/tasks", tags=["stream"])
 

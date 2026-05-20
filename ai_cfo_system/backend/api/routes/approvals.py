@@ -1,11 +1,12 @@
 import uuid
 from datetime import datetime
-from fastapi import APIRouter, HTTPException, Depends
+
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
+from ...database.models import Approval, Task
 from ...database.session import get_db_dep
-from ...database.models import Task, Approval
 
 router = APIRouter(prefix="/approvals", tags=["approvals"])
 

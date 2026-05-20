@@ -1,10 +1,10 @@
 import os
-from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
-from typing import Optional, List
 
-from ...rag.pipeline import RAGPipeline
+from fastapi import APIRouter
+from pydantic import BaseModel
+
 from ...rag.knowledge_base import KNOWLEDGE_BASE
+from ...rag.pipeline import RAGPipeline
 
 router = APIRouter(prefix="/rag", tags=["rag"])
 

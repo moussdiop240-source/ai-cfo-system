@@ -2,9 +2,10 @@
 IFRS Agent — deterministic 12 IASB standard checks. ZERO LLM.
 """
 from datetime import datetime
-from .state import CFOAgentState
-from ..compliance.ifrs_engine import IFRSEngine
+
 from ..agents.math_engine import FinancialCalculationEngine
+from ..compliance.ifrs_engine import IFRSEngine
+from .state import CFOAgentState
 
 
 def ifrs_agent_node(state: CFOAgentState) -> CFOAgentState:

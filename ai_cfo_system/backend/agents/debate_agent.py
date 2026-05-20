@@ -4,13 +4,11 @@ Round 1: IFRS Advocate (IASB expert)
 Round 2: GAAP Advocate (FASB/SEC expert)
 Round 3: Independent Arbiter (Big-4 Chief Auditor)
 """
-import os
-import json
 from datetime import datetime
-from typing import Dict, Any
+from typing import Dict
 
-from .state import CFOAgentState
 from ..llm.adapter import get_adapter, trim_for_local
+from .state import CFOAgentState
 
 IFRS_ADVOCATE_SYSTEM = """You are an IFRS advocate and Big-4 senior audit partner specializing
 in IASB standards with 25 years of experience across EU, UK, and international listed companies.

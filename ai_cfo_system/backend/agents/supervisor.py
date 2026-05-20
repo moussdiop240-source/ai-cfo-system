@@ -2,26 +2,26 @@
 LangGraph Supervisor — routes between agents using conditional edges.
 Deterministic routing based on state completeness flags.
 """
-import os
-from typing import Literal
 from datetime import datetime
+from typing import Literal
 
-from langgraph.graph import StateGraph, END
+from langgraph.graph import END, StateGraph
+
 try:
     from langgraph.checkpoint.memory import MemorySaver
 except ImportError:
     MemorySaver = None
 
-from .state import CFOAgentState
+from .analysis_agent import analysis_agent_node
 from .data_agent import data_agent_node
+from .debate_agent import debate_agent_node
+from .gaap_agent import gaap_agent_node
+from .human_loop_node import compute_approval_triggers, human_review_node
+from .ifrs_agent import ifrs_agent_node
 from .math_engine import math_engine_node
 from .rag_agent import rag_agent_node
-from .gaap_agent import gaap_agent_node
-from .ifrs_agent import ifrs_agent_node
-from .analysis_agent import analysis_agent_node
-from .human_loop_node import human_review_node, compute_approval_triggers
 from .reporting_agent import reporting_agent_node
-from .debate_agent import debate_agent_node
+from .state import CFOAgentState
 
 SUPERVISOR_SYSTEM = """You are the supervisor of a CFO AI pipeline. Your only job is to route
 to the correct next agent. Respond with exactly one word.

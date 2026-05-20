@@ -3,9 +3,8 @@ Reporting Agent — generates final board-ready report with ASC/IFRS citations.
 Uses ONLY exact numbers from math engine. Never estimates.
 """
 import os
-import json
 from datetime import datetime
-from typing import Dict, Any
+from typing import Dict
 
 import anthropic
 

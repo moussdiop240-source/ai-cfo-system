@@ -9,18 +9,12 @@ Color coding:
   Green (0,128,0)  : Cross-sheet links
   Red   (255,0,0)  : External links
 """
-import openpyxl
-from openpyxl import Workbook
-from openpyxl.styles import (
-    Font, PatternFill, Alignment, Border, Side, numbers
-)
-from openpyxl.chart import BarChart, LineChart, Reference
-from openpyxl.chart.series import DataPoint
-from openpyxl.utils import get_column_letter
-from openpyxl.formatting.rule import ColorScaleRule
-import json
 import os
-from datetime import datetime
+
+from openpyxl import Workbook
+from openpyxl.chart import BarChart, Reference
+from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
+from openpyxl.utils import get_column_letter
 
 # ── Color constants ────────────────────────────────────────────────────────
 BLUE_INPUT  = "0000FF"

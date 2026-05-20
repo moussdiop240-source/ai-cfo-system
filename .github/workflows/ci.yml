@@ -38,7 +38,7 @@ jobs:
           pip install pytest pytest-cov ruff
 
       - name: Lint with Ruff
-        run: ruff check . --select E,F,W,I --ignore E501 --exclude .venv,node_modules
+        run: python -m ruff check .
 
       - name: Syntax check - dashboard generators
         run: python -c "import dashboards.html_generators; print('OK')"

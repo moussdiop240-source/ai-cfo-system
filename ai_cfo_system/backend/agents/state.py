@@ -1,4 +1,4 @@
-from typing import TypedDict, List, Optional, Dict, Any
+from typing import Any, Dict, List, Optional, TypedDict
 
 
 class CFOAgentState(TypedDict):

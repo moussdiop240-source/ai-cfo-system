@@ -2,7 +2,8 @@
 HTML Dashboard generators — AI CFO System.
 Each function accepts pipeline outputs and returns the path to the generated HTML file.
 """
-import math, os
+import math
+import os
 
 _ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
@@ -189,7 +190,7 @@ def _cfo_agent_analysis(data, kpis, variance, gaap, ifrs, anomalies, runway):
             "Math Engine", ""))
     else:
         findings.append(_finding("critical", f"EBITDA Margin {em:.1f}% — Critical",
-            f"Near-zero or negative EBITDA. Operational restructuring warranted.",
+            "Near-zero or negative EBITDA. Operational restructuring warranted.",
             "Math Engine", ""))
 
     # liquidity
@@ -203,7 +204,7 @@ def _cfo_agent_analysis(data, kpis, variance, gaap, ifrs, anomalies, runway):
             "Math Engine", "ASC 205-40"))
     else:
         findings.append(_finding("critical", f"Current Ratio {cr:.2f}x — LIQUIDITY RISK",
-            f"Current liabilities exceed current assets. ASC 205-40 going concern evaluation required. Disclose in financial statements.",
+            "Current liabilities exceed current assets. ASC 205-40 going concern evaluation required. Disclose in financial statements.",
             "Math Engine", "ASC 205-40"))
 
     # revenue variance
@@ -213,7 +214,7 @@ def _cfo_agent_analysis(data, kpis, variance, gaap, ifrs, anomalies, runway):
             "Math Engine", "SAB 99"))
     elif var_pct >= -5:
         findings.append(_finding("info", f"Revenue {_pct(var_pct)} vs Budget — On Track",
-            f"Within SAB 99 materiality threshold (±5%). No additional disclosure required.",
+            "Within SAB 99 materiality threshold (±5%). No additional disclosure required.",
             "Math Engine", "SAB 99"))
     else:
         findings.append(_finding("warn", f"Revenue {_pct(var_pct)} vs Budget — Unfavorable",
@@ -241,11 +242,11 @@ def _cfo_agent_analysis(data, kpis, variance, gaap, ifrs, anomalies, runway):
             "Math Engine", "ASC 740"))
     elif icr > 1:
         findings.append(_finding("warn", f"Interest Coverage {icr:.1f}x — Thin",
-            f"Coverage approaching minimum. Refinancing or debt reduction should be evaluated.",
+            "Coverage approaching minimum. Refinancing or debt reduction should be evaluated.",
             "Math Engine", "ASC 740"))
     else:
         findings.append(_finding("critical", f"Interest Coverage {icr:.1f}x — Deficient",
-            f"EBIT does not cover interest expense. Covenant breach risk. Immediate lender communication required.",
+            "EBIT does not cover interest expense. Covenant breach risk. Immediate lender communication required.",
             "Math Engine", "ASC 740 · ASC 205-40"))
 
     # GAAP non-compliance
@@ -269,11 +270,11 @@ def _cfo_agent_analysis(data, kpis, variance, gaap, ifrs, anomalies, runway):
     if var_pct < -5:
         actions.append(f"CFO: Investigate revenue shortfall of {_fmt(abs(t.get('variance_abs',0)))} — identify volume vs price vs mix drivers (deadline: 30 days)")
     if gm < 40:
-        actions.append(f"Controller: Review COGS structure — target gross margin improvement to 50%+ (deadline: Q2)")
+        actions.append("Controller: Review COGS structure — target gross margin improvement to 50%+ (deadline: Q2)")
     if dso > 45:
-        actions.append(f"FP&A: Tighten AR collections — implement 30-day collection target, review credit terms (deadline: 45 days)")
+        actions.append("FP&A: Tighten AR collections — implement 30-day collection target, review credit terms (deadline: 45 days)")
     if cr < 1.5:
-        actions.append(f"CFO: Improve working capital — negotiate extended payables or draw on credit facility (deadline: 60 days)")
+        actions.append("CFO: Improve working capital — negotiate extended payables or draw on credit facility (deadline: 60 days)")
     if nc_gaap:
         actions.append(f"Controller: Resolve {len(nc_gaap)} GAAP non-compliance item(s) before next reporting period")
     if not actions:
@@ -327,7 +328,7 @@ def _cost_agent_analysis(data, kpis):
             "Math Engine", "ASC 730 · IAS 38"))
     else:
         findings.append(_finding("info", f"R&D Spend {rd_pct:.1f}% — Below Benchmark",
-            f"May indicate underinvestment in product development. Consider whether pipeline velocity is sustainable.",
+            "May indicate underinvestment in product development. Consider whether pipeline velocity is sustainable.",
             "Math Engine", "ASC 730"))
 
     # SG&A
@@ -373,14 +374,14 @@ def _cost_agent_analysis(data, kpis):
     if rd_var > 10:
         actions.append(f"CTO: Review R&D budget overrun of {_pct(rd_var)} — identify scope changes vs approved plan")
     if sga_var > 10:
-        actions.append(f"VP Sales: Investigate SG&A overrun — break down by headcount vs marketing vs T&E")
+        actions.append("VP Sales: Investigate SG&A overrun — break down by headcount vs marketing vs T&E")
     if fcf < 0:
         actions.append(f"CFO: Address negative FCF of {_fmt(fcf)} — defer non-critical CapEx or accelerate collections")
     if gm < 50:
-        actions.append(f"Controller: Gross margin below 50% — model COGS reduction scenarios for Board presentation")
+        actions.append("Controller: Gross margin below 50% — model COGS reduction scenarios for Board presentation")
     if not actions:
         actions.append(f"FP&A: Maintain cost discipline — OpEx ratio {opex_pct:.1f}% is within target range")
-        actions.append(f"Controller: Update full-year cost forecast incorporating Q1 actuals")
+        actions.append("Controller: Update full-year cost forecast incorporating Q1 actuals")
 
     return _agent_block("Cost Analysis", summary, "".join(findings[:8]), actions)
 
@@ -411,7 +412,7 @@ def _headcount_agent_analysis(data, kpis):
     bench_ann = 200_000
     sev = "ok" if ann_rev >= bench_ann else "warn" if ann_rev >= 100_000 else "critical"
     findings.append(_finding(sev, f"Revenue/Employee {_fmt(ann_rev)}/yr",
-        f"{'Above $200K benchmark — strong productivity.' if ann_rev>=bench_ann else f'Below $200K benchmark. Scaling headcount faster than revenue.'}",
+        f"{'Above $200K benchmark — strong productivity.' if ann_rev>=bench_ann else 'Below $200K benchmark. Scaling headcount faster than revenue.'}",
         "Math Engine", ""))
 
     # profit per employee
@@ -470,10 +471,10 @@ def _headcount_agent_analysis(data, kpis):
     if nrr > 0 and nrr < 100:
         actions.append(f"VP CS: NRR {nrr}% below 100% — implement retention program, identify at-risk accounts")
     if profit_pe < 0:
-        actions.append(f"CFO: Negative profit per employee — evaluate headcount efficiency vs revenue growth plan")
+        actions.append("CFO: Negative profit per employee — evaluate headcount efficiency vs revenue growth plan")
     if not actions:
-        actions.append(f"HR: Maintain current hiring pace — productivity metrics are healthy")
-        actions.append(f"FP&A: Model H2 headcount plan — ensure revenue growth outpaces HC growth rate")
+        actions.append("HR: Maintain current hiring pace — productivity metrics are healthy")
+        actions.append("FP&A: Model H2 headcount plan — ensure revenue growth outpaces HC growth rate")
 
     return _agent_block("Headcount Intelligence", summary, "".join(findings[:8]), actions)
 
@@ -499,11 +500,11 @@ def _inventory_agent_analysis(data, kpis):
     method = data.get("inventory_cost_method", "fifo").upper()
     if method == "FIFO":
         findings.append(_finding("ok", "FIFO Method — GAAP & IFRS Compliant",
-            f"FIFO is compliant under both ASC 330 and IAS 2. LIFO is strictly prohibited under IFRS (IAS 2.25). No restatement risk.",
+            "FIFO is compliant under both ASC 330 and IAS 2. LIFO is strictly prohibited under IFRS (IAS 2.25). No restatement risk.",
             "GAAP Engine · IFRS Engine", "ASC 330 · IAS 2"))
     else:
         findings.append(_finding("critical", f"{method} Method — IFRS Non-Compliant",
-            f"IAS 2 strictly prohibits LIFO. If reporting under IFRS, immediate restatement to FIFO or weighted average required.",
+            "IAS 2 strictly prohibits LIFO. If reporting under IFRS, immediate restatement to FIFO or weighted average required.",
             "IFRS Engine", "IAS 2.25"))
 
     # turnover
@@ -513,15 +514,15 @@ def _inventory_agent_analysis(data, kpis):
             "Math Engine", "ASC 330"))
     elif turnover >= 4:
         findings.append(_finding("ok", f"Inventory Turnover {turnover:.1f}x — Healthy",
-            f"Adequate turnover. Monitor for any buildup that could indicate demand softening.",
+            "Adequate turnover. Monitor for any buildup that could indicate demand softening.",
             "Math Engine", "ASC 330"))
     elif turnover >= 2:
         findings.append(_finding("warn", f"Inventory Turnover {turnover:.1f}x — Slowing",
-            f"Below 4x threshold. Consider write-down exposure for slow-moving items under ASC 330 Lower of Cost/NRV.",
+            "Below 4x threshold. Consider write-down exposure for slow-moving items under ASC 330 Lower of Cost/NRV.",
             "Math Engine", "ASC 330 · IAS 2"))
     else:
         findings.append(_finding("critical", f"Inventory Turnover {turnover:.1f}x — Very Low",
-            f"Inventory significantly exceeding consumption. NRV write-down assessment required under ASC 330 and IAS 2.",
+            "Inventory significantly exceeding consumption. NRV write-down assessment required under ASC 330 and IAS 2.",
             "Math Engine", "ASC 330 · IAS 2"))
 
     # DIO
@@ -567,8 +568,8 @@ def _inventory_agent_analysis(data, kpis):
     if aged_est / inv > 0.05:
         actions.append(f"Controller: 90+ day inventory at {aged_est/inv*100:.1f}% — complete NRV assessment per ASC 330 before quarter-end")
     if not actions:
-        actions.append(f"Supply Chain: Maintain current FIFO inventory process — all metrics within benchmark")
-        actions.append(f"Controller: Complete annual ASC 330 / IAS 2 NRV review at year-end")
+        actions.append("Supply Chain: Maintain current FIFO inventory process — all metrics within benchmark")
+        actions.append("Controller: Complete annual ASC 330 / IAS 2 NRV review at year-end")
 
     return _agent_block("Inventory Intelligence", summary, "".join(findings[:8]), actions)
 

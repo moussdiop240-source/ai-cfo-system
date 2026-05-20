@@ -3,11 +3,13 @@ AI CFO Multi-Agent System — Streamlit UI
 Supports Anthropic (API key) and Ollama (local, no key needed).
 Run: streamlit run streamlit_app.py
 """
-import os, sys, json
+import os
+import sys
+
 sys.path.insert(0, ".")
 
-import streamlit as st
 import pandas as pd
+import streamlit as st
 
 # ── page config (must be first st call) ─────────────────────────────────────
 st.set_page_config(
@@ -188,7 +190,7 @@ with st.sidebar:
             os.environ["OLLAMA_MODEL"] = ollama_model
 
     os.environ["LLM_BACKEND"] = selected_backend
-    from backend.llm.adapter import reset_adapter, get_adapter
+    from backend.llm.adapter import get_adapter, reset_adapter
     reset_adapter()
 
     # show active status
@@ -202,7 +204,7 @@ with st.sidebar:
 
     # ── Company / period ──────────────────────────────────────────────────────
     st.markdown("### Report Config")
-    from data.sample_companies import COMPANIES, list_companies
+    from data.sample_companies import COMPANIES
     co_options = {f"{v['_meta']['name']} ({v['_meta']['sector']})": k for k, v in COMPANIES.items()}
     co_options["Custom (manual entry)"] = "_custom"
     selected_co_label = st.selectbox("Company Dataset", list(co_options.keys()), index=0)
@@ -286,13 +288,14 @@ with st.sidebar:
         if st.button("🖥  Generate All Dashboards", type="primary"):
             with st.spinner("Generating 4 dashboards …"):
                 try:
+                    import subprocess
+
                     from dashboards.html_generators import (
                         generate_cfo_dashboard,
                         generate_cost_dashboard,
                         generate_headcount_dashboard,
                         generate_inventory_dashboard,
                     )
-                    import subprocess, sys as _sys
                     r = st.session_state["results"]
                     paths = []
                     paths.append(generate_cfo_dashboard(

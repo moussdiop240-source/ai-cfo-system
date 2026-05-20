@@ -1,14 +1,15 @@
 """Integration tests for the agent pipeline (deterministic layers only)."""
-import pytest
 import sys
+
+import pytest
+
 sys.path.insert(0, ".")
 
-from backend.agents.supervisor import create_initial_state, route_from_supervisor
-from backend.agents.math_engine import math_engine_node
 from backend.agents.gaap_agent import gaap_agent_node
 from backend.agents.ifrs_agent import ifrs_agent_node
+from backend.agents.math_engine import math_engine_node
 from backend.agents.rag_agent import rag_agent_node
-
+from backend.agents.supervisor import create_initial_state, route_from_supervisor
 
 SAMPLE_FINANCIAL_DATA = {
     "revenue": 12_500_000,

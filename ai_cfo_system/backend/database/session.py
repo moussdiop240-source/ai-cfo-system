@@ -1,7 +1,9 @@
 import os
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, Session
 from contextlib import contextmanager
+
+from sqlalchemy import create_engine
+from sqlalchemy.orm import Session, sessionmaker
+
 from .models import Base
 
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./ai_cfo.db")

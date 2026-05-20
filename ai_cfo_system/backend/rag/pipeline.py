@@ -2,10 +2,9 @@
 RAG Pipeline — pgvector retrieval before every LLM call.
 Falls back to keyword search if pgvector is unavailable.
 """
-from typing import List, Dict, Any, Optional
-import os
 import hashlib
 import json
+from typing import Any, Dict, List, Optional
 
 from .knowledge_base import keyword_search
 

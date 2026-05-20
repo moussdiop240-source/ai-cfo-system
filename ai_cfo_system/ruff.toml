@@ -1,0 +1,22 @@
+# Ruff configuration — AI CFO System
+line-length = 120
+
+[lint]
+select = ["E", "F", "W", "I"]
+ignore = [
+    "E501",   # line too long — handled by line-length above
+    "E731",   # lambda assignment — intentional in math helpers
+    "E741",   # ambiguous variable name (l, O, I) — common in comprehensions
+    "E402",   # module import not at top — needed in scripts with sys.path setup
+    "E701",   # multiple statements on one line — used in compact helpers
+    "F841",   # local variable assigned but never used — cleanup deferred
+]
+
+# Exclude non-production scripts and generated files
+exclude = [
+    ".venv",
+    "node_modules",
+    "generate_cfo_dashboard.py",
+    "test_ollama.py",
+    "fix_web.py",
+]

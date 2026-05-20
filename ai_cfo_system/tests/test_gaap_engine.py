@@ -1,6 +1,8 @@
 """Tests for the GAAP compliance engine (12 ASC standards)."""
-import pytest
 import sys
+
+import pytest
+
 sys.path.insert(0, ".")
 
 from backend.compliance.gaap_engine import GAAPEngine

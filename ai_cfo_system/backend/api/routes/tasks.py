@@ -1,15 +1,13 @@
 import uuid
-import asyncio
 from datetime import datetime
-from typing import Optional
 
-from fastapi import APIRouter, HTTPException, BackgroundTasks, Depends
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-from ...database.session import get_db_dep
-from ...database.models import Task
 from ...agents.supervisor import build_cfo_graph, create_initial_state
+from ...database.models import Task
+from ...database.session import get_db_dep
 
 router = APIRouter(prefix="/tasks", tags=["tasks"])
 

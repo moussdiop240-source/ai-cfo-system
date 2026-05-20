@@ -2,9 +2,10 @@
 GAAP Agent — deterministic 12 ASC standard checks. ZERO LLM.
 """
 from datetime import datetime
-from .state import CFOAgentState
-from ..compliance.gaap_engine import GAAPEngine
+
 from ..agents.math_engine import FinancialCalculationEngine
+from ..compliance.gaap_engine import GAAPEngine
+from .state import CFOAgentState
 
 
 def gaap_agent_node(state: CFOAgentState) -> CFOAgentState:
